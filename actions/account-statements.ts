@@ -126,11 +126,11 @@ export async function getPartiesList() {
 
     return {
       success: true,
-      suppliers: suppliers.map((s) => ({ id: s.id, name: s.name, code: s.code, category: s.type, status: s.status })),
-      customers: customers.map((c) => ({ id: c.id, name: c.name, code: c.code, category: c.country, status: c.status })),
-      contractors: contractors.map((k) => ({ id: k.id, name: k.name, code: k.id, category: k.specialization || 'مقاول تشغيل', status: k.isActive ? 'نشط' : 'معطل' })),
-      employees: employees.map((e) => ({ id: e.id, name: e.name, code: e.id, category: `${e.position} - ${e.department}`, status: e.status })),
-      treasuryAccounts: treasuryAccounts.map((t) => ({ id: t.id, name: t.name, code: t.id, category: `${t.type} (${t.currency})`, balance: Number(t.balance), currency: t.currency })),
+      suppliers: suppliers.map((s: any) => ({ id: s.id, name: s.name, code: s.code, category: s.type, status: s.status })),
+      customers: customers.map((c: any) => ({ id: c.id, name: c.name, code: c.code, category: c.country, status: c.status })),
+      contractors: contractors.map((k: any) => ({ id: k.id, name: k.name, code: k.id, category: k.specialization || 'مقاول تشغيل', status: k.isActive ? 'نشط' : 'معطل' })),
+      employees: employees.map((e: any) => ({ id: e.id, name: e.name, code: e.id, category: `${e.position} - ${e.department}`, status: e.status })),
+      treasuryAccounts: treasuryAccounts.map((t: any) => ({ id: t.id, name: t.name, code: t.id, category: `${t.type} (${t.currency})`, balance: Number(t.balance), currency: t.currency })),
     };
   } catch (error: any) {
     console.error('Failed to get parties list:', error);

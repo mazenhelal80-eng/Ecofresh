@@ -2,6 +2,7 @@
   "name": "exporting_erp",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "clean": "node scripts/clean.js",
     "predev": "node scripts/predev.js",

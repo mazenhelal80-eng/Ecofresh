@@ -587,22 +587,22 @@ export async function getCompleteReportData(params: ReportFilterParams = {}): Pr
     // -------------------------------------------------------------
     // 7. STATION BENCHMARKS
     // -------------------------------------------------------------
-    const stationBenchmarkList: StationPerformanceItem[] = stations.map((st) => {
-      const ops = currentOperations.filter((op) => op.stationId === st.id);
-      const rawBatches = currentRawBatches.filter((b) => b.stationId === st.id);
+    const stationBenchmarkList: StationPerformanceItem[] = stations.map((st: any) => {
+      const ops = currentOperations.filter((op: any) => op.stationId === st.id);
+      const rawBatches = currentRawBatches.filter((b: any) => b.stationId === st.id);
 
-      const rawIn = ops.reduce((s, o) => s + Number(o.rawInputKg), 0);
-      const outKg = ops.reduce((s, o) => s + Number(o.finishedOutputKg), 0);
-      const wasteKg = ops.reduce((s, o) => s + Number(o.rawWasteKg), 0);
-      const cost = ops.reduce((s, o) => s + Number(o.grandTotalCost), 0);
-      const rawRec = rawBatches.reduce((s, b) => s + Number(b.grossQtyKg), 0);
+      const rawIn = ops.reduce((s: number, o: any) => s + Number(o.rawInputKg), 0);
+      const outKg = ops.reduce((s: number, o: any) => s + Number(o.finishedOutputKg), 0);
+      const wasteKg = ops.reduce((s: number, o: any) => s + Number(o.rawWasteKg), 0);
+      const cost = ops.reduce((s: number, o: any) => s + Number(o.grandTotalCost), 0);
+      const rawRec = rawBatches.reduce((s: number, b: any) => s + Number(b.grossQtyKg), 0);
 
       const wastePct = rawIn > 0 ? (wasteKg / rawIn) * 100 : 0;
       const yieldPct = rawIn > 0 ? (outKg / rawIn) * 100 : 0;
       const costPerKg = outKg > 0 ? cost / outKg : 0;
 
-      const currentFgStock = st.finishedGoodsBatches.reduce((s, b) => s + Number(b.availableQty), 0);
-      const currentRwStock = st.rawBatches.reduce((s, b) => s + Number(b.availableQty), 0);
+      const currentFgStock = st.finishedGoodsBatches.reduce((s: number, b: any) => s + Number(b.availableQty), 0);
+      const currentRwStock = st.rawBatches.reduce((s: number, b: any) => s + Number(b.availableQty), 0);
 
       let benchmarkStatus: 'EXCELLENT' | 'NORMAL' | 'CRITICAL' = 'NORMAL';
       let benchmarkReason = 'معدلات مقبولة ضمن المستهدف';
@@ -637,9 +637,9 @@ export async function getCompleteReportData(params: ReportFilterParams = {}): Pr
     // -------------------------------------------------------------
     // 8. EXECUTIVE SUMMARY AGGREGATION
     // -------------------------------------------------------------
-    const prevProducedKg = prevOperations.reduce((s, o) => s + Number(o.finishedOutputKg), 0);
-    const prevRevenueEgp = prevShipments.reduce((s, sh) => s + Number(sh.grossRevenueEgp), 0);
-    const prevProfitEgp = prevShipments.reduce((s, sh) => s + Number(sh.netProfitEgp), 0);
+    const prevProducedKg = prevOperations.reduce((s: number, o: any) => s + Number(o.finishedOutputKg), 0);
+    const prevRevenueEgp = prevShipments.reduce((s: number, sh: any) => s + Number(sh.grossRevenueEgp), 0);
+    const prevProfitEgp = prevShipments.reduce((s: number, sh: any) => s + Number(sh.netProfitEgp), 0);
 
     const prodKgChange = calculatePercentageChange(totalFinishedProducedKg, prevProducedKg);
     const revChange = calculatePercentageChange(totalRevenueEgp, prevRevenueEgp);
@@ -766,41 +766,41 @@ export async function getCompleteReportData(params: ReportFilterParams = {}): Pr
       const mIndex = i + 1;
       const mName = arabicMonthNames[i];
 
-      const mRawBatches = currentRawBatches.filter((b) => {
+      const mRawBatches = currentRawBatches.filter((b: any) => {
         const d = new Date(b.receivedDate);
         return d.getMonth() === i && d.getFullYear() === targetYear;
       });
 
-      const mOps = currentOperations.filter((op) => {
+      const mOps = currentOperations.filter((op: any) => {
         const d = new Date(op.date);
         return d.getMonth() === i && d.getFullYear() === targetYear;
       });
 
-      const mShipments = currentShipments.filter((sh) => {
+      const mShipments = currentShipments.filter((sh: any) => {
         if (!sh.dispatchDate) return false;
         const d = new Date(sh.dispatchDate);
         return d.getMonth() === i && d.getFullYear() === targetYear;
       });
 
-      const mTxns = financialTxns.filter((t) => {
+      const mTxns = financialTxns.filter((t: any) => {
         const d = new Date(t.date);
         return d.getMonth() === i && d.getFullYear() === targetYear;
       });
 
-      const rawRec = mRawBatches.reduce((s, b) => s + Number(b.grossQtyKg), 0);
-      const rawProc = mOps.reduce((s, o) => s + Number(o.rawInputKg), 0);
-      const fgOut = mOps.reduce((s, o) => s + Number(o.finishedOutputKg), 0);
-      const waste = mOps.reduce((s, o) => s + Number(o.rawWasteKg), 0);
+      const rawRec = mRawBatches.reduce((s: number, b: any) => s + Number(b.grossQtyKg), 0);
+      const rawProc = mOps.reduce((s: number, o: any) => s + Number(o.rawInputKg), 0);
+      const fgOut = mOps.reduce((s: number, o: any) => s + Number(o.finishedOutputKg), 0);
+      const waste = mOps.reduce((s: number, o: any) => s + Number(o.rawWasteKg), 0);
       const wasteRate = rawProc > 0 ? (waste / rawProc) * 100 : 0;
 
-      const shippedKg = mShipments.reduce((s, sh) => s + Number(sh.shippedQtyKg), 0);
-      const revEgp = mShipments.reduce((s, sh) => s + Number(sh.grossRevenueEgp), 0);
-      const revEur = mShipments.reduce((s, sh) => s + (Number(sh.shippedQtyKg) * Number(sh.sellingPriceEur)), 0);
+      const shippedKg = mShipments.reduce((s: number, sh: any) => s + Number(sh.shippedQtyKg), 0);
+      const revEgp = mShipments.reduce((s: number, sh: any) => s + Number(sh.grossRevenueEgp), 0);
+      const revEur = mShipments.reduce((s: number, sh: any) => s + (Number(sh.shippedQtyKg) * Number(sh.sellingPriceEur)), 0);
 
       let cashIn = 0;
       let cashOut = 0;
       let exp = 0;
-      mTxns.forEach((t) => {
+      mTxns.forEach((t: any) => {
         const amt = Number(t.amountEgp);
         const isCol = t.type.includes('تحصيل') || t.type.includes('وارد') || t.type.includes('Inflow');
         const isPay = t.type.includes('سداد') || t.type.includes('منصرف') || t.type.includes('Outflow');

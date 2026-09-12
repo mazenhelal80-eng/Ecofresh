@@ -1,4 +1,4 @@
-﻿node_modules/
+node_modules/
 .next/
 out/
 .vercel/
@@ -8,3 +8,4 @@ out/
 .env.test.local
 .env.production.local
 *.log
+*.tsbuildinfo
