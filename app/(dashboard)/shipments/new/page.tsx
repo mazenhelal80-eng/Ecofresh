@@ -5,7 +5,7 @@ import { ShipmentWizard } from "@/components/modules/shipments/wizard/shipment-w
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "معالج إنشاء شحنة تصدير — Nilotic Frost ERP",
+  title: "معالج إنشاء شحنة تصدير | EcoFresh",
 };
 
 export default async function NewShipmentPage() {

@@ -23,6 +23,7 @@ export const RawBatchSchema = z
     truckPlate: z.string().optional().nullable(),
     driverName: z.string().optional().nullable(),
     notes: z.string().optional().nullable(),
+    submissionId: z.string().optional().nullable(),
     // Derived fields (optional in input, automatically computed in output)
     netQtyKg: cleanOptionalPositiveNumber(),
     totalPayableEgp: cleanOptionalNumber(),
@@ -33,10 +34,10 @@ export const RawBatchSchema = z
     path: ['grossQtyKg'],
   })
   .transform((data) => {
-    const netQtyKg = Math.round((data.grossQtyKg - (data.tareQtyKg || 0)) * 100) / 100;
+    const netQtyKg = Number((data.grossQtyKg - (data.tareQtyKg || 0)).toFixed(4));
     const totalPayableEgp =
-      Math.round((netQtyKg * data.unitPriceEgp + (data.transportCostEgp || 0)) * 100) / 100;
-    const unitCost = netQtyKg > 0 ? Math.round((totalPayableEgp / netQtyKg) * 100) / 100 : 0;
+      Number((netQtyKg * data.unitPriceEgp + (data.transportCostEgp || 0)).toFixed(4));
+    const unitCost = netQtyKg > 0 ? Number((totalPayableEgp / netQtyKg).toFixed(4)) : 0;
 
     return {
       ...data,

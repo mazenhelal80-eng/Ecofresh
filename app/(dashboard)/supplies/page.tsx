@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = {
-  title: "المستلزمات والكراتين — Nilotic Frost ERP",
+  title: "المستلزمات والكراتين | EcoFresh",
 };
 
 export default async function SuppliesPage() {

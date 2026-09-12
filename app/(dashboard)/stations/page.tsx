@@ -6,11 +6,14 @@ import { StationCard } from "@/components/modules/stations/station-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { requirePagePermission } from "@/lib/auth";
+
 export const metadata = {
-  title: "المحطات والمخازن — Nilotic Frost ERP",
+  title: "المحطات والمخازن | EcoFresh",
 };
 
 export default async function StationsPage() {
+  await requirePagePermission('stations.view');
   const stations = await getStations();
 
   const totalCapacityKg = stations.reduce(
@@ -109,7 +112,7 @@ export default async function StationsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {stations.map((station) => (
-            <StationCard key={station.id} station={station} />
+            <StationCard key={station.id} station={station as any} />
           ))}
         </div>
       )}

@@ -38,7 +38,7 @@ export function ProcessingWizard({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const initialStationId = stations.length > 0 ? stations[0].id : "";
-  const initialContractor = contractors.find((c) => c.stationId === initialStationId);
+  const initialContractor = contractors.length > 0 ? contractors[0] : null;
 
   // Form State preserved across steps
   const [formData, setFormData] = useState<ProcessingFormValues>({
@@ -356,10 +356,6 @@ export function ProcessingWizard({
                 );
 
                 let nextContractorId = fields.contractorId !== undefined ? fields.contractorId : prev.contractorId;
-                if (isStationChanged) {
-                  const matchingContractor = contractors.find((c) => c.stationId === fields.stationId);
-                  nextContractorId = matchingContractor ? matchingContractor.id : "";
-                }
 
                 return {
                   ...prev,

@@ -12,7 +12,6 @@ import { CustomerSchema, type CustomerFormValues } from "@/lib/validations/custo
 import { createCustomer } from "@/actions/customers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CurrencyInput } from "@/components/ui/currency-input";
 import { CURRENCY_CONFIG } from "@/lib/currency";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -24,13 +23,9 @@ export function CustomerForm() {
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(CustomerSchema),
     defaultValues: {
-      code: "",
       name: "",
       country: "",
-      destinationPort: "",
-      currency: "EUR",
-      paymentTerms: "",
-      creditLimit: 0,
+      currency: "EGP",
       contactPerson: "",
       phone: "",
       email: "",
@@ -81,7 +76,7 @@ export function CustomerForm() {
           <div>
             <CardTitle className="text-xl font-bold text-white">إضافة عميل تصدير دولي جديد</CardTitle>
             <CardDescription className="text-emerald-100 text-xs mt-1">
-              أدخل بيانات شركة الاستيراد وميناء الوصول البحرية والعملة والحد الائتماني (يتم التكويد تلقائياً)
+              أدخل بيانات شركة الاستيراد والعملة وبيانات التواصل (يتم التكويد تلقائياً)
             </CardDescription>
           </div>
         </div>
@@ -90,21 +85,6 @@ export function CustomerForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* International Code (Optional) */}
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel className="font-semibold text-gray-700">كود التعريف الدولي (اختياري)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="مثال: CUST-GLOBAL-DE (أو اتركه فارغاً للتوليد التلقائي)" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* Name */}
               <FormField
                 control={form.control}
@@ -135,21 +115,6 @@ export function CustomerForm() {
                 )}
               />
 
-              {/* Destination Port */}
-              <FormField
-                control={form.control}
-                name="destinationPort"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-semibold text-gray-700">ميناء الوصول البحرية *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="مثال: ميناء روتردام / ميناء جدة" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* Currency (Fixed Unified System: EGP) */}
               <FormField
                 control={form.control}
@@ -162,36 +127,6 @@ export function CustomerForm() {
                         <span>{CURRENCY_CONFIG.nameAr} ({CURRENCY_CONFIG.code}) - {CURRENCY_CONFIG.symbol}</span>
                         <input type="hidden" {...field} value="EGP" />
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Credit Limit */}
-              <FormField
-                control={form.control}
-                name="creditLimit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-semibold text-gray-700">الحد الائتماني الأقصى (ج.م) *</FormLabel>
-                    <FormControl>
-                      <CurrencyInput step="10000" placeholder="500000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Payment Terms */}
-              <FormField
-                control={form.control}
-                name="paymentTerms"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel className="font-semibold text-gray-700">شروط وتسهيلات السداد *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="مثال: 30% دفعة مقدمة و70% عند الاعتماد المستندي CAD" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

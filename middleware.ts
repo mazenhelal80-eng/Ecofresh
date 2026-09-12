@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   const isPlaceholderKey =
     !url || url.includes("your-project") || url.includes("placeholder");
 
-  // Fast-path bypass for local development or placeholder keys to eliminate auth latency
+  // Fast-path bypass only if placeholder URL is explicitly configured
   if (isPlaceholderKey) {
     return NextResponse.next();
   }
@@ -52,6 +52,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // 1. Root path handling
   if (pathname === '/') {
     if (user) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
@@ -59,10 +60,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (!user && (pathname === '/dashboard' || pathname.startsWith('/dashboard/'))) {
+  // 2. Prevent unauthenticated access to protected app routes
+  const isPublicRoute = pathname === '/login' || pathname.startsWith('/api/public');
+  if (!user && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
+  // 3. Prevent logged-in user from seeing login page
   if (user && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
@@ -71,6 +75,14 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/dashboard', '/dashboard/:path*', '/login'],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - images and media files (svg, png, jpg, etc.)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 };
-

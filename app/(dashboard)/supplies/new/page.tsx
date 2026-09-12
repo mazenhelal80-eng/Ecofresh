@@ -3,7 +3,7 @@ import { SupplyForm } from "@/components/modules/supplies/supply-form";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
-  title: "إضافة مستلزم جديد — Nilotic Frost ERP",
+  title: "إضافة مستلزم جديد | EcoFresh",
 };
 
 export default async function NewSupplyPage() {

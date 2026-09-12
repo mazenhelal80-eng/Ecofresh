@@ -45,10 +45,8 @@ export function Step1General({
   onChange,
   errors,
 }: Step1GeneralProps) {
-  // Filter contractors strictly by selected station
-  const filteredContractors = stationId
-    ? contractors.filter((c) => c.stationId === stationId)
-    : [];
+  // All active contractors are available regardless of station
+  const activeContractors = contractors.filter((c) => c.isActive !== false);
 
   const availableCropsAtStation = React.useMemo(() => {
     if (!rawBatches || rawBatches.length === 0) return [];
@@ -72,10 +70,8 @@ export function Step1General({
   const suppliesWarehouseName = suppliesLocation?.name || (selectedStation ? `${selectedStation.name} — مخزن المستلزمات` : "مخزن المستلزمات");
 
   const handleStationChange = (newStationId: string) => {
-    const defaultContractor = contractors.find((c) => c.stationId === newStationId);
     onChange({
       stationId: newStationId,
-      contractorId: defaultContractor ? defaultContractor.id : "",
     });
   };
 
@@ -124,11 +120,11 @@ export function Step1General({
             className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#012d1d]"
           >
             <option value="">
-              {filteredContractors.length === 0 && stationId
-                ? "-- لا يوجد مقاول مسجل لهذه المحطة --"
-                : "-- اختر المقاول --"}
+              {activeContractors.length === 0
+                ? "-- لا يوجد مقاولون متاحون --"
+                : "-- اختر مقاول التشغيل والفرز --"}
             </option>
-            {filteredContractors.map((c) => (
+            {activeContractors.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name} (تعريفة: {Number(c.tariffRatePerKg)} ج.م/كجم)
               </option>

@@ -6,11 +6,11 @@ import { PaginationControls } from "@/components/modules/common/pagination-contr
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getProcessingOperationsPaginated } from "@/actions/processing";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, requirePagePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
-  title: "عمليات التدوير والفرز — Nilotic Frost ERP",
+  title: "عمليات التدوير والفرز | EcoFresh",
 };
 
 interface ProcessingOperationsPageProps {
@@ -21,7 +21,7 @@ interface ProcessingOperationsPageProps {
 }
 
 export default async function ProcessingOperationsPage({ searchParams }: ProcessingOperationsPageProps) {
-  const user = await getCurrentUser();
+  const user = await requirePagePermission('operations.view');
   const page = Math.max(1, parseInt(searchParams.page || "1", 10));
   const period = searchParams.period || "THIS_MONTH";
   const pageSize = 25;
@@ -50,7 +50,7 @@ export default async function ProcessingOperationsPage({ searchParams }: Process
   }
 
   const [paginatedData, kpiAggregates] = await Promise.all([
-    getProcessingOperationsPaginated(page, pageSize),
+    getProcessingOperationsPaginated(page, pageSize, kpiWhereCondition),
     prisma.processingOperation.aggregate({
       where: kpiWhereCondition,
       _count: { id: true },

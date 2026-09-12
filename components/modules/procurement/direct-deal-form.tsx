@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { PackageCheck, Loader2, ArrowRight, Calculator } from "lucide-react";
+import { PackageCheck, Loader2, ArrowRight, Calculator, Calendar, DollarSign } from "lucide-react";
 import Link from "next/link";
 
 import { DirectDealSchema, type DirectDealFormValues } from "@/lib/validations/purchases";
@@ -19,6 +19,7 @@ interface SupplierOption {
   id: string;
   code: string;
   name: string;
+  type?: string;
 }
 
 interface StationOption {
@@ -44,11 +45,20 @@ interface PackagingOption {
   capacityKg?: any;
 }
 
+interface TreasuryAccountOption {
+  id: string;
+  name: string;
+  balance: any;
+  currency: string;
+  type?: string;
+}
+
 interface DirectDealFormProps {
   suppliers: SupplierOption[];
   stations: StationOption[];
   products?: ProductOption[];
   packagingSupplies?: PackagingOption[];
+  treasuryAccounts?: TreasuryAccountOption[];
   defaultStationId?: string;
   defaultSupplierId?: string;
   initialData?: Partial<DirectDealFormValues>;
@@ -59,22 +69,29 @@ export function DirectDealForm({
   stations,
   products = [],
   packagingSupplies = [],
+  treasuryAccounts = [],
   defaultStationId,
   defaultSupplierId,
   initialData,
 }: DirectDealFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionId] = useState(() => 'SUB-DEAL-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 7));
 
   const form = useForm<DirectDealFormValues>({
     resolver: zodResolver(DirectDealSchema),
     defaultValues: {
+      submissionId,
+      date: initialData?.date || new Date().toISOString().split('T')[0],
       supplierId: initialData?.supplierId || defaultSupplierId || "",
       stationId: initialData?.stationId || defaultStationId || "",
       productName: initialData?.productName || "",
       qtyKg: initialData?.qtyKg,
       purchasePricePerKg: initialData?.purchasePricePerKg,
       transportCost: initialData?.transportCost ?? 0,
+      isPaidNow: initialData?.isPaidNow ?? false,
+      paidAmount: initialData?.paidAmount ?? 0,
+      treasuryAccountId: initialData?.treasuryAccountId || "",
       packageType: initialData?.packageType || "",
       packageCount: initialData?.packageCount ?? null,
       notes: initialData?.notes || "",
@@ -85,10 +102,14 @@ export function DirectDealForm({
   const qtyKg = Number(form.watch("qtyKg")) || 0;
   const purchasePricePerKg = Number(form.watch("purchasePricePerKg")) || 0;
   const transportCost = Number(form.watch("transportCost")) || 0;
+  const isPaidNow = form.watch("isPaidNow");
+  const paidAmount = Number(form.watch("paidAmount")) || 0;
 
   const rawCost = qtyKg * purchasePricePerKg;
   const totalCost = rawCost + transportCost;
   const effectiveCostPerKg = qtyKg > 0 ? totalCost / qtyKg : 0;
+  const effectivePaid = isPaidNow ? paidAmount : 0;
+  const remainingPayable = Math.max(0, totalCost - effectivePaid);
 
   async function onSubmit(values: DirectDealFormValues) {
     setIsSubmitting(true);
@@ -121,10 +142,10 @@ export function DirectDealForm({
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Live Total & Cost per Kg Banner */}
       <Card className="bg-gradient-to-r from-[#012d1d] to-emerald-900 text-white shadow-md border-none">
-        <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+        <CardContent className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           <div>
             <span className="text-xs text-emerald-200 block font-semibold">إجمالي تكلفة الصفقة (EGP)</span>
-            <span className="text-3xl font-bold text-amber-300 mt-1 block">
+            <span className="text-2xl font-bold text-amber-300 mt-1 block font-mono">
               {totalCost.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -135,10 +156,33 @@ export function DirectDealForm({
               شراء {qtyKg.toLocaleString()} كجم (بضاعة: {rawCost.toLocaleString()} + نولون: {transportCost.toLocaleString()})
             </span>
           </div>
-          <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 md:border-r border-emerald-700/50 pt-3 md:pt-0 md:pr-6">
+
+          <div className="border-t md:border-t-0 md:border-r md:border-l border-emerald-700/50 pt-3 md:pt-0 md:px-4 text-right">
+            <span className="text-xs text-emerald-200 block font-semibold">
+              {isPaidNow && effectivePaid > 0 ? "حالة السداد والمتبقي" : "مستحق آجل للمورد"}
+            </span>
+            <div className="mt-1">
+              {isPaidNow ? (
+                <>
+                  <span className="text-lg font-bold text-white block font-mono">
+                    <span className="text-emerald-300">{effectivePaid.toLocaleString()} ج.م</span> مسدد
+                  </span>
+                  <span className="text-xs text-amber-200 block font-mono mt-0.5">
+                    متبقي للمورد: {remainingPayable.toLocaleString()} ج.م
+                  </span>
+                </>
+              ) : (
+                <span className="text-sm font-bold text-amber-200 block font-mono">
+                  {totalCost.toLocaleString()} ج.م (آجل بالكامل)
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-3 md:pt-0 md:pr-4">
             <div className="text-right">
               <span className="text-xs text-emerald-200 block font-semibold">التكلفة الإجمالية للكيلو</span>
-              <span className="text-2xl font-bold text-cyan-300 mt-1 block">
+              <span className="text-2xl font-bold text-cyan-300 mt-1 block font-mono">
                 {effectiveCostPerKg.toFixed(2)} ج.م / كجم
               </span>
             </div>
@@ -167,6 +211,38 @@ export function DirectDealForm({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Date Input */}
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-gray-700 flex items-center gap-1">
+                        <Calendar className="h-4 w-4 text-emerald-800" /> تاريخ إبرام / استلام الصفقة *
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} value={field.value || ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Invoice No */}
+                <FormField
+                  control={form.control}
+                  name="invoiceNo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-gray-700">رقم الفاتورة / إيصال التوريد</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثال: INV-DIR-2026-001 (اختياري)" value={field.value ?? ""} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Product Name Select */}
                 <FormField
                   control={form.control}
@@ -208,7 +284,7 @@ export function DirectDealForm({
                           <option value="" disabled>-- اختر المورد الخارجي / تاجر الجاهز --</option>
                           {suppliers.map((sup) => (
                             <option key={sup.id} value={sup.id}>
-                              {sup.name} ({sup.code})
+                              {sup.name} ({sup.code}) {sup.type === "FINISHED_GOODS" ? "— [مورد بضاعة جاهزة]" : ""}
                             </option>
                           ))}
                         </select>
@@ -224,7 +300,7 @@ export function DirectDealForm({
                   name="stationId"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel className="font-semibold text-gray-700">محطة الاستلام والتخزين *</FormLabel>
+                      <FormLabel className="font-semibold text-gray-700">محطة الاستلام والتخزين (مخزن المنتج التام) *</FormLabel>
                       <FormControl>
                         <select
                           {...field}
@@ -249,12 +325,12 @@ export function DirectDealForm({
                   name="qtyKg"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-gray-700">الكمية الصافية بالجيلوجرام (كجم) *</FormLabel>
+                      <FormLabel className="font-semibold text-gray-700">الكمية الصافية بالكيلوجرام (كجم) *</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          step="100"
-                          placeholder="أدخل الكمية الصافية بالكيلوجرام"
+                          step="any"
+                          placeholder="أدخل الكمية بالكيلوجرام (يقبل كسور)"
                           {...field}
                           value={field.value ?? ""}
                           onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
@@ -271,7 +347,7 @@ export function DirectDealForm({
                   name="purchasePricePerKg"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-gray-700">سعر الكيلو من المورد (ج.م) *</FormLabel>
+                      <FormLabel className="font-semibold text-gray-700">سعر شراء الكيلو من المورد (ج.م) *</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -293,7 +369,7 @@ export function DirectDealForm({
                   name="packageType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-gray-700">نوع العبوة / التعبئة من المستلزمات *</FormLabel>
+                      <FormLabel className="font-semibold text-gray-700">نوع العبوة / التعبئة (اختياري)</FormLabel>
                       <FormControl>
                         <select
                           {...field}
@@ -333,7 +409,7 @@ export function DirectDealForm({
                       <FormControl>
                         <Input
                           type="number"
-                          step="100"
+                          step="any"
                           placeholder="0.00 (اختياري)"
                           {...field}
                           value={field.value ?? ""}
@@ -345,20 +421,91 @@ export function DirectDealForm({
                   )}
                 />
 
-                {/* Invoice No */}
-                <FormField
-                  control={form.control}
-                  name="invoiceNo"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel className="font-semibold text-gray-700">رقم الفاتورة / المستند</FormLabel>
-                      <FormControl>
-                        <Input placeholder="مثال: INV-DIR-2026-001 (اختياري)" value={field.value ?? ""} onChange={field.onChange} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                {/* Instant Payment Section */}
+                <div className="md:col-span-2 p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="isPaidNow"
+                        checked={Boolean(isPaidNow)}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          form.setValue("isPaidNow", checked);
+                          if (checked && (!form.getValues("paidAmount") || form.getValues("paidAmount") === 0)) {
+                            form.setValue("paidAmount", totalCost);
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-gray-300 text-emerald-700 focus:ring-emerald-500"
+                      />
+                      <label htmlFor="isPaidNow" className="font-bold text-sm text-emerald-950 cursor-pointer flex items-center gap-1.5">
+                        <DollarSign className="h-4 w-4 text-emerald-700" />
+                        تسجيل سداد فوري من الخزينة / البنك (دفعة مسددة فوراً للمورد)
+                      </label>
+                    </div>
+
+                    {isPaidNow && totalCost > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => form.setValue("paidAmount", totalCost)}
+                        className="text-xs border-emerald-300 text-emerald-900 hover:bg-emerald-100 font-semibold"
+                      >
+                        سداد كامل المبلغ ({totalCost.toLocaleString()} ج.م)
+                      </Button>
+                    )}
+                  </div>
+
+                  {isPaidNow && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-emerald-200/60">
+                      <FormField
+                        control={form.control}
+                        name="paidAmount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-semibold text-gray-700">المبلغ المسدد الآن (ج.م) *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="any"
+                                placeholder="0.00"
+                                value={field.value ?? ""}
+                                onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="treasuryAccountId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-semibold text-gray-700">حساب الخزينة أو البنك المسدد منه *</FormLabel>
+                            <FormControl>
+                              <select
+                                {...field}
+                                value={field.value || ""}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              >
+                                <option value="" disabled>-- اختر الحساب المالي المسدد منه --</option>
+                                {treasuryAccounts.map((acc) => (
+                                  <option key={acc.id} value={acc.id}>
+                                    {acc.name} (رصيد: {Number(acc.balance).toLocaleString()} {acc.currency})
+                                  </option>
+                                ))}
+                              </select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   )}
-                />
+                </div>
 
                 {/* Notes */}
                 <FormField
@@ -378,10 +525,10 @@ export function DirectDealForm({
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t">
                 <Button asChild type="button" variant="outline" className="gap-2">
-  <Link href="/finished-purchases">
+                  <Link href="/finished-purchases">
                     <ArrowRight className="h-4 w-4" /> إلغاء
                   </Link>
-</Button>
+                </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}

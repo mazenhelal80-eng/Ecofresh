@@ -6,10 +6,14 @@ export const CustomerSchema = z.object({
   code: z.string().optional().or(z.literal('')),
   name: z.string().min(3, 'اسم شركة العميل مطلوب'),
   country: z.string().min(2, 'الدولة مطلوبة'),
-  destinationPort: z.string().min(3, 'ميناء الوصول مطلوب'),
   currency: z.string().default('EGP'),
-  paymentTerms: z.string().min(3, 'شروط الدفع مطلوبة'),
-  creditLimit: cleanNonNegativeNumber('الحد الائتماني يجب ألا يكون سالباً', 500000),
+  paymentTerms: z.string().optional().nullable(),
+  creditLimit: z
+    .preprocess(
+      (val) => (val === '' || val === null || val === undefined || Number.isNaN(val) ? undefined : val),
+      z.coerce.number().min(0, 'الحد الائتماني يجب ألا يكون سالباً').optional()
+    )
+    .optional(),
   contactPerson: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   email: z.string().email('بريد إلكتروني غير صالح').optional().or(z.literal('')).nullable(),

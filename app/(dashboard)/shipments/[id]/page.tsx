@@ -8,7 +8,7 @@ import { CostBreakdownCard } from "@/components/modules/shipments/cost-breakdown
 import { ProfitSummaryCard } from "@/components/modules/shipments/profit-summary-card";
 
 export const metadata = {
-  title: "تفاصيل الشحنة وشجرة التتبع العكسية — Nilotic Frost ERP",
+  title: "تفاصيل الشحنة وشجرة التتبع العكسية | EcoFresh",
 };
 
 interface ShipmentDetailsPageProps {

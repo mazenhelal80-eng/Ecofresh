@@ -40,7 +40,7 @@ export const cleanOptionalNumber = () =>
   ) as unknown as z.ZodOptional<z.ZodNumber>;
 
 /**
- * Clean integer coercion for counts and packaging quantities.
+ * Clean integer coercion for pure discrete integer counts (e.g. package counts, installments).
  */
 export const cleanPositiveInt = (message: string) =>
   z.preprocess(

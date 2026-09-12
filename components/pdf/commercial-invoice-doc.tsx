@@ -188,7 +188,7 @@ export function CommercialInvoiceDoc({ shipment }: CommercialInvoiceProps) {
         {/* Header */}
         <View style={styles.headerContainer}>
           <View>
-            <Text style={styles.companyTitle}>NILOTIC FROST EXPORT CO.</Text>
+            <Text style={styles.companyTitle}>ECOFRESH EXPORT CO.</Text>
             <Text style={styles.companySubtitle}>Freezing & Agricultural Export Operations</Text>
             <Text style={styles.companySubtitle}>CR No: 109283 | Tax ID: 592-819-204</Text>
             <Text style={styles.companySubtitle}>Alexandria Free Zone, Egypt</Text>
@@ -205,13 +205,13 @@ export function CommercialInvoiceDoc({ shipment }: CommercialInvoiceProps) {
           <View style={styles.box}>
             <Text style={styles.boxTitle}>EXPORTER (SHIPPER)</Text>
             <Text style={{ fontSize: 9, fontWeight: 'bold', marginBottom: 2 }}>
-              NILOTIC FROST FREEZING S.A.E.
+              ECOFRESH FREEZING S.A.E.
             </Text>
             <Text style={{ fontSize: 8, color: '#4b5563' }}>
               Industrial Zone 3, Sadat City, Egypt
             </Text>
             <Text style={{ fontSize: 8, color: '#4b5563' }}>Tel: +20 3 555 8900</Text>
-            <Text style={{ fontSize: 8, color: '#4b5563' }}>Email: export@niloticfrost.com</Text>
+            <Text style={{ fontSize: 8, color: '#4b5563' }}>Email: export@ecofresh.com</Text>
           </View>
 
           <View style={styles.box}>
@@ -221,9 +221,6 @@ export function CommercialInvoiceDoc({ shipment }: CommercialInvoiceProps) {
             </Text>
             <Text style={{ fontSize: 8, color: '#4b5563' }}>
               Country: {shipment.customer?.country || 'Netherlands'}
-            </Text>
-            <Text style={{ fontSize: 8, color: '#4b5563' }}>
-              Destination Port: {shipment.destinationPort || shipment.customer?.destinationPort || 'Rotterdam Port'}
             </Text>
             <Text style={{ fontSize: 8, color: '#4b5563' }}>
               Payment Terms: {shipment.customer?.paymentTerms || '30 Days Net CAD'}
@@ -242,10 +239,6 @@ export function CommercialInvoiceDoc({ shipment }: CommercialInvoiceProps) {
             <View style={styles.fieldRow}>
               <Text style={styles.fieldLabel}>Booking / B/L No:</Text>
               <Text style={styles.fieldValue}>{shipment.bookingNo || 'BK-992014-EU'}</Text>
-            </View>
-            <View style={styles.fieldRow}>
-              <Text style={styles.fieldLabel}>Delivery Terms:</Text>
-              <Text style={styles.fieldValue}>{shipment.order?.deliveryTerms || 'FOB Rotterdam'}</Text>
             </View>
           </View>
 
@@ -342,13 +335,13 @@ export function CommercialInvoiceDoc({ shipment }: CommercialInvoiceProps) {
           <View style={{ width: '40%', borderTopWidth: 1, borderTopColor: '#9ca3af', paddingTop: 4 }}>
             <Text style={{ fontSize: 8, color: '#4b5563', textAlign: 'center' }}>Authorized Signature & Stamp</Text>
             <Text style={{ fontSize: 8, fontWeight: 'bold', color: '#012d1d', textAlign: 'center', marginTop: 2 }}>
-              NILOTIC FROST EXPORT DEPT.
+              ECOFRESH EXPORT DEPT.
             </Text>
           </View>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Nilotic Frost ERP — Official Commercial Document Engine</Text>
+          <Text style={styles.footerText}>EcoFresh ERP — Official Commercial Document Engine</Text>
           <Text style={styles.footerText}>Page 1 of 1</Text>
         </View>
       </Page>

@@ -3,7 +3,7 @@ import { getStations } from "@/actions/stations";
 import { TreasuryForm } from "@/components/modules/financials/treasury-form";
 
 export const metadata = {
-  title: "إضافة حساب بنكي / خزينة جديد — Nilotic Frost ERP",
+  title: "إضافة حساب بنكي / خزينة جديد | EcoFresh",
 };
 
 export default async function NewTreasuryAccountPage() {

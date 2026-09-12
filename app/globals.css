@@ -56,3 +56,95 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* ==========================================================================
+   REAL A4 PRINT ENGINE STYLES (PURE HTML/CSS - NO CANVAS / NO SCREENSHOT)
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 12mm 15mm 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 10.5pt !important;
+    line-height: 1.45 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force display of real semantic print document */
+  .print-document {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Semantic tables multi-page formatting */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  th,
+  td {
+    border-color: #d1d5db !important;
+  }
+
+  /* Sections pagination control */
+  .report-section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    margin-bottom: 14pt !important;
+  }
+
+  .report-section-title {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .report-header {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .report-footer {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Eliminate screen-only shadows, sticky position, and fixed elements */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .sticky {
+    position: static !important;
+  }
+}
+

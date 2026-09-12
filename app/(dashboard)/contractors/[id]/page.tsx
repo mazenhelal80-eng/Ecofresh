@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "تفاصيل وحساب مقاول التشغيل — Nilotic Frost ERP",
+  title: "تفاصيل وحساب مقاول التشغيل | EcoFresh",
 };
 
 interface ContractorDetailsPageProps {
@@ -38,10 +38,11 @@ export default async function ContractorDetailsPage({ params }: ContractorDetail
     prisma.contractor.findUnique({
       where: { id: params.id },
       include: {
-        station: true,
         operations: {
-          take: 15,
           orderBy: { date: "desc" },
+          include: {
+            station: true,
+          },
         },
       },
     }),
@@ -53,15 +54,38 @@ export default async function ContractorDetailsPage({ params }: ContractorDetail
     notFound();
   }
 
+  // Compute breakdown by station
+  const stationBreakdownMap = contractor.operations.reduce((acc, op) => {
+    const stnId = op.stationId;
+    const stnName = op.station?.name || stnId;
+    if (!acc[stnId]) {
+      acc[stnId] = {
+        stationId: stnId,
+        stationName: stnName,
+        totalQtyKg: 0,
+        totalCost: 0,
+        count: 0,
+      };
+    }
+    acc[stnId].totalQtyKg += Number(op.finishedOutputKg || 0);
+    acc[stnId].totalCost += Number(op.contractorCost || 0);
+    acc[stnId].count += 1;
+    return acc;
+  }, {} as Record<string, { stationId: string; stationName: string; totalQtyKg: number; totalCost: number; count: number }>);
+
+  const breakdownList = Object.values(stationBreakdownMap);
+  const totalQtyKgAll = breakdownList.reduce((acc, s) => acc + s.totalQtyKg, 0);
+  const totalCostAll = breakdownList.reduce((acc, s) => acc + s.totalCost, 0);
+
   return (
     <div className="space-y-6">
       {/* Back Navigation Bar */}
       <div className="flex items-center justify-between">
         <Button asChild variant="outline" size="sm" className="gap-2 text-gray-700">
-  <Link href="/contractors">
+          <Link href="/contractors">
             <ArrowRight className="h-4 w-4" /> العودة لقائمة المقاولين
           </Link>
-</Button>
+        </Button>
         <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
           حالة المقاول: {contractor.isActive ? "نشط معتمد" : "غير نشط"}
         </Badge>
@@ -86,7 +110,9 @@ export default async function ContractorDetailsPage({ params }: ContractorDetail
                   </Badge>
                 </div>
                 <p className="text-emerald-100 text-xs mt-0.5 flex items-center gap-2">
-                  <span>المحطة التابع لها: {contractor.station?.name || "عام لكافة المحطات"}</span>
+                  <span className="bg-emerald-800/60 px-2 py-0.5 rounded text-emerald-200">
+                    نطاق العمل: مقاول عام (يعمل عبر كافة محطات التشغيل)
+                  </span>
                   {contractor.specialization && (
                     <>
                       <span>•</span>
@@ -110,6 +136,79 @@ export default async function ContractorDetailsPage({ params }: ContractorDetail
         </CardHeader>
       </Card>
 
+      {/* Multi-Station Breakdown & Settlement Summary Card */}
+      <Card className="border-gray-200 shadow-sm">
+        <CardHeader className="pb-3 border-b border-gray-100">
+          <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-emerald-700" />
+            توزيع العمليات والمستحقات حسب محطات التشغيل ({breakdownList.length} محطات)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          {breakdownList.length === 0 ? (
+            <div className="text-center py-6 text-xs text-gray-500">
+              لم يقم المقاول بأي عمليات تشغيل في المحطات حتى الآن.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-gray-50 text-gray-700 font-bold border-b border-gray-200">
+                  <tr>
+                    <th className="p-3">محطة التشغيل</th>
+                    <th className="p-3 text-center">عدد العمليات</th>
+                    <th className="p-3 font-mono">إجمالي الكمية المنتجة</th>
+                    <th className="p-3 font-mono">الكمية بالأطنان</th>
+                    <th className="p-3 font-mono">متوسط التعريفة</th>
+                    <th className="p-3 font-mono">إجمالي أتعاب المقاول</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-mono">
+                  {breakdownList.map((stn) => (
+                    <tr key={stn.stationId} className="hover:bg-gray-50/70 transition-colors">
+                      <td className="p-3 font-sans font-bold text-gray-900 flex items-center gap-1.5">
+                        <Building2 className="h-3.5 w-3.5 text-emerald-600" />
+                        <span>{stn.stationName}</span>
+                        <span className="text-[10px] text-gray-400">({stn.stationId})</span>
+                      </td>
+                      <td className="p-3 text-center font-bold text-gray-700">{stn.count} عملية</td>
+                      <td className="p-3 font-bold text-emerald-700">
+                        {stn.totalQtyKg.toLocaleString()} كجم
+                      </td>
+                      <td className="p-3 font-bold text-blue-700">
+                        {(stn.totalQtyKg / 1000).toFixed(2)} طن
+                      </td>
+                      <td className="p-3 text-gray-700 font-sans">
+                        {Number(contractor.tariffRatePerKg).toFixed(2)} ج.م/كجم
+                      </td>
+                      <td className="p-3 font-bold text-gray-900">
+                        {stn.totalCost.toLocaleString()} ج.م
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Total Row */}
+                  <tr className="bg-emerald-50/50 font-bold border-t-2 border-emerald-200">
+                    <td className="p-3 font-sans text-emerald-900">
+                      الإجمالي التراكمي لكافة المحطات
+                    </td>
+                    <td className="p-3 text-center text-emerald-900">{contractor.operations.length} عملية</td>
+                    <td className="p-3 text-emerald-900 font-mono">
+                      {totalQtyKgAll.toLocaleString()} كجم
+                    </td>
+                    <td className="p-3 text-blue-900 font-mono">
+                      {(totalQtyKgAll / 1000).toFixed(2)} طن
+                    </td>
+                    <td className="p-3 text-emerald-900 font-sans">—</td>
+                    <td className="p-3 text-emerald-900 font-mono">
+                      {totalCostAll.toLocaleString()} ج.م
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Operations History */}
       <Card className="border-gray-200 shadow-sm">
         <CardHeader className="pb-3 border-b border-gray-100 flex flex-row items-center justify-between">
@@ -129,6 +228,7 @@ export default async function ContractorDetailsPage({ params }: ContractorDetail
                 <thead className="bg-gray-50 text-gray-700 font-bold border-b border-gray-200">
                   <tr>
                     <th className="p-3">رقم العملية</th>
+                    <th className="p-3">محطة التشغيل</th>
                     <th className="p-3">التاريخ</th>
                     <th className="p-3">الخام المدخل</th>
                     <th className="p-3">المنتج التام الناتج</th>
@@ -142,6 +242,12 @@ export default async function ContractorDetailsPage({ params }: ContractorDetail
                   {contractor.operations.map((op) => (
                     <tr key={op.id} className="hover:bg-gray-50/70 transition-colors">
                       <td className="p-3 font-bold text-primary font-mono">{op.id}</td>
+                      <td className="p-3 font-sans text-gray-800">
+                        <span className="inline-flex items-center gap-1 font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                          <Building2 className="h-3 w-3 text-emerald-600" />
+                          {op.station?.name || op.stationId}
+                        </span>
+                      </td>
                       <td className="p-3 text-gray-500">
                         {new Date(op.date).toLocaleDateString("ar-EG")}
                       </td>

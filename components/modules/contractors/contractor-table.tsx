@@ -8,16 +8,21 @@ import { deleteContractor } from "@/actions/contractors";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
+import Link from "next/link";
+
 export interface ContractorWithStation {
   id: string;
   name: string;
   tariffRatePerKg: any;
-  stationId: string | null;
   phone: string | null;
   specialization: string | null;
   isActive: boolean;
   createdAt: Date;
-  station: {
+  operationsCount?: number;
+  totalOutputKg?: number;
+  totalCost?: number;
+  stations?: Array<{ id: string; name: string }>;
+  station?: {
     id: string;
     name: string;
     location: string;
@@ -51,7 +56,7 @@ export function ContractorTable({ contractors }: ContractorTableProps) {
           <HardHat className="h-12 w-12 text-gray-400 mb-3" />
           <h3 className="text-lg font-semibold text-gray-800">لا يوجد مقاولين مسجلين</h3>
           <p className="text-sm text-gray-500 max-w-sm mt-1">
-            قم بإضافة مقاولي الفرز والتجهيز الجدد وربطهم بمحطات التشغيل وتعريفات أتعاب الكيلوجرام.
+            قم بإضافة مقاولي الفرز والتجهيز الجدد ومتابعة عملياتهم عبر كافة محطات التشغيل.
           </p>
         </CardContent>
       </Card>
@@ -67,7 +72,7 @@ export function ContractorTable({ contractors }: ContractorTableProps) {
               <th className="px-6 py-4">كود المقاول</th>
               <th className="px-6 py-4">اسم المقاول</th>
               <th className="px-6 py-4">التخصص / الخدمات</th>
-              <th className="px-6 py-4">محطة التشغيل المرتبطة</th>
+              <th className="px-6 py-4">نطاق العمل / المحطات النشطة</th>
               <th className="px-6 py-4">تعريفة الفرز والتجهيز</th>
               <th className="px-6 py-4">الهاتف</th>
               <th className="px-6 py-4">الحالة</th>
@@ -78,28 +83,35 @@ export function ContractorTable({ contractors }: ContractorTableProps) {
             {contractors.map((contractor) => (
               <tr key={contractor.id} className="hover:bg-gray-50/80 transition-colors">
                 <td className="px-6 py-4 font-mono font-bold text-gray-900">
-                  {contractor.id}
+                  <Link href={`/contractors/${contractor.id}`} className="hover:text-emerald-700 hover:underline">
+                    {contractor.id}
+                  </Link>
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900">
-                  <div className="flex items-center gap-2">
+                  <Link href={`/contractors/${contractor.id}`} className="flex items-center gap-2 hover:text-emerald-700">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 font-bold">
                       <HardHat className="h-4 w-4" />
                     </div>
                     <span>{contractor.name}</span>
-                  </div>
+                  </Link>
                 </td>
                 <td className="px-6 py-4 text-gray-600">
                   {contractor.specialization || "فرز وتجهيز عمومي"}
                 </td>
                 <td className="px-6 py-4">
-                  {contractor.station ? (
-                    <div className="flex items-center gap-1.5 text-gray-700">
-                      <Building2 className="h-4 w-4 text-gray-400" />
-                      <span className="font-medium">{contractor.station.name}</span>
-                      <span className="text-xs text-gray-400">({contractor.station.id})</span>
+                  {contractor.stations && contractor.stations.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 items-center">
+                      {contractor.stations.map((st) => (
+                        <Badge key={st.id} variant="outline" className="bg-emerald-50/50 text-emerald-800 border-emerald-200 text-xs">
+                          <Building2 className="h-3 w-3 ml-1 text-emerald-600" />
+                          {st.name}
+                        </Badge>
+                      ))}
                     </div>
                   ) : (
-                    <span className="text-gray-400 font-italic">غير مرتبط بمحطة</span>
+                    <span className="text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
+                      متاح لكافة المحطات
+                    </span>
                   )}
                 </td>
                 <td className="px-6 py-4">

@@ -33,7 +33,7 @@ export async function generateRawBatchId(tx: any, date: Date = new Date()): Prom
 
 export async function addRawMaterialArrival(
   payload: unknown
-): Promise<ActionResult<{ batchId: string; netQty: number }>> {
+): Promise<ActionResult<{ batchId: string; netQty: number; isExisting?: boolean }>> {
   const user = await getCurrentUser();
   if (!user || !can(user.role, 'CREATE_OPERATION')) {
     return { success: false, error: 'غير مصرح لك بتسجيل وارد خام' };
@@ -49,17 +49,18 @@ export async function addRawMaterialArrival(
   }
 
   const data = validated.data;
-  const netQty = data.grossQtyKg - data.tareQtyKg;
+  const netQty = Number((data.grossQtyKg - data.tareQtyKg).toFixed(4));
   if (netQty <= 0) {
     return { success: false, error: 'الوزن الصافي يجب أن يكون أكبر من الصفر' };
   }
 
-  const totalPayable = netQty * data.unitPriceEgp + (data.transportCostEgp || 0);
-  const unitCost = totalPayable / netQty;
+  const totalPayable = Number((netQty * data.unitPriceEgp + (data.transportCostEgp || 0)).toFixed(4));
+  const unitCost = netQty > 0 ? Number((totalPayable / netQty).toFixed(4)) : 0;
   const receivedDate = data.receivedDate ? new Date(data.receivedDate) : new Date();
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(
+      async (tx) => {
       // 1. Validate Station & Resolve RAW StockLocation
       const station = await tx.station.findUnique({ where: { id: data.stationId } });
       if (!station || !station.isActive) {
@@ -76,10 +77,95 @@ export async function addRawMaterialArrival(
       if (!supplier) throw new Error(`المورد المحدد (${data.supplierId}) غير موجود`);
       if (supplier.status !== 'معتمد') throw new Error(`المورد (${supplier.name}) غير معتمد حالياً`);
 
-      // 3. Concurrency-safe, collision-free Batch ID generation
-      const batchId = await generateRawBatchId(tx, receivedDate);
+      // 3. Idempotency Check: Prevent duplicate lot generation on double clicks / retries
+      let existingBatch = null;
 
-      // 3. Create RawBatch record linked to locationId
+      // Check by submissionId if provided
+      if (data.submissionId) {
+        existingBatch = await tx.rawBatch.findFirst({
+          where: {
+            stationId: data.stationId,
+            supplierId: data.supplierId,
+            notes: { contains: `[SUB:${data.submissionId}]` },
+          },
+        });
+      }
+
+      // If not found by submissionId, check by exact arrival criteria on same day
+      if (!existingBatch && data.truckPlate) {
+        const startOfDay = new Date(receivedDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(receivedDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        existingBatch = await tx.rawBatch.findFirst({
+          where: {
+            stationId: data.stationId,
+            supplierId: data.supplierId,
+            truckPlate: data.truckPlate,
+            receivedDate: { gte: startOfDay, lte: endOfDay },
+            rawProduct: data.rawProduct,
+            initialQty: netQty,
+          },
+        });
+      }
+
+      const { AccountingService } = await import('@/lib/accounting/accounting-service');
+
+      if (existingBatch) {
+        // Lot already exists! Check if financial transaction was posted
+        const existingTxn = await tx.financialTransaction.findFirst({
+          where: {
+            relatedEntityType: 'RAW_BATCH',
+            relatedEntityId: existingBatch.batchId,
+            status: { not: 'ملغاة' },
+          },
+        });
+
+        if (existingTxn) {
+          // Completely posted already! Idempotent return without duplicate lot, stock, or payable
+          return {
+            batchId: existingBatch.batchId,
+            netQty: Number(existingBatch.initialQty),
+            supplierId: data.supplierId,
+            isExisting: true,
+          };
+        }
+
+        // Lot exists but missing AP entry: post AP entry idempotently for existing batch
+        await AccountingService.recordTransaction(
+          {
+            date: receivedDate,
+            type: 'استحقاق توريد خام (AP)',
+            partyType: 'مورد خام',
+            partyId: data.supplierId,
+            partyName: supplier.name,
+            amountEgp: totalPayable,
+            currency: 'EGP',
+            relatedEntityType: 'RAW_BATCH',
+            relatedEntityId: existingBatch.batchId,
+            refDoc: existingBatch.batchId,
+            paymentMethod: 'CREDIT',
+            description: `استحقاق توريد ${netQty.toLocaleString()} كجم ${data.rawProduct} باللوط ${existingBatch.batchId}`,
+            createdById: user.id,
+          },
+          tx
+        );
+
+        return {
+          batchId: existingBatch.batchId,
+          netQty: Number(existingBatch.initialQty),
+          supplierId: data.supplierId,
+          isExisting: true,
+        };
+      }
+
+      // 4. Concurrency-safe, collision-free Batch ID generation
+      const batchId = await generateRawBatchId(tx, receivedDate);
+      const subTag = data.submissionId ? ` [SUB:${data.submissionId}]` : '';
+      const notesWithSub = data.notes ? `${data.notes}${subTag}` : (subTag ? subTag.trim() : null);
+
+      // 5. Create RawBatch record linked to locationId
       await tx.rawBatch.create({
         data: {
           batchId,
@@ -99,12 +185,12 @@ export async function addRawMaterialArrival(
           brixDegree: data.brixDegree || null,
           truckPlate: data.truckPlate,
           driverName: data.driverName,
-          notes: data.notes,
+          notes: notesWithSub,
           createdById: user.id,
         },
       });
 
-      // 4. Log StockMovement audit ledger entry
+      // 6. Log StockMovement audit ledger entry
       await logStockMovement(tx, {
         movementType: 'PURCHASE',
         sourceLocationId: null,
@@ -119,8 +205,7 @@ export async function addRawMaterialArrival(
         createdById: user.id,
       });
 
-      // 5. Create AP Financial Transaction via AccountingService
-      const { AccountingService } = await import('@/lib/accounting/accounting-service');
+      // 7. Create AP Financial Transaction via AccountingService
       await AccountingService.recordTransaction(
         {
           date: receivedDate,
@@ -140,18 +225,24 @@ export async function addRawMaterialArrival(
         tx
       );
 
-      return { batchId, netQty, supplierId: data.supplierId };
-    });
+      return { batchId, netQty, supplierId: data.supplierId, isExisting: false };
+    },
+    { maxWait: 10000, timeout: 25000 }
+  );
 
     const { revalidateFinancialImpact } = await import('@/actions/financials');
     await revalidateFinancialImpact('مورد خام', result.supplierId);
     safeRevalidatePath('/raw-purchases');
     safeRevalidatePath('/inventory/raw');
 
+    const message = result.isExisting
+      ? `تم التعرف على الوارد المسجل مسبقاً برقم اللوط ${result.batchId} دون إنشاء تكرار.`
+      : `تم بنجاح توليد اللوط ${result.batchId} وقيد استحقاق المورد بصافي ${result.netQty.toLocaleString()} كجم بمخزن الخامات!`;
+
     return {
       success: true,
       data: result,
-      message: `تم بنجاح قيد اللوط ${result.batchId} بصافي ${result.netQty.toLocaleString()} كجم بمخزن الخامات!`,
+      message,
     };
   } catch (error: any) {
     return { success: false, error: formatActionError(error, 'حدث خطأ أثناء قيد الوارد') };

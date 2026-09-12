@@ -69,10 +69,10 @@ export default function LoginPage() {
           <Snowflake className="h-8 w-8 text-cyan-400" />
         </div>
         <CardTitle className="text-2xl font-bold text-[#012d1d]">
-          Nilotic Frost ERP
+          EcoFresh
         </CardTitle>
         <CardDescription className="text-sm text-gray-600">
-          نظام إدارة المحطات وتصدير الحاصلات الزراعية
+          إيكو فريش — نظام إدارة المحطات وتصدير الحاصلات الزراعية
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -87,7 +87,7 @@ export default function LoginPage() {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="admin@niloticfrost.com"
+                      placeholder="admin@ecofresh.com"
                       className="text-right"
                       disabled={isLoading}
                       {...field}

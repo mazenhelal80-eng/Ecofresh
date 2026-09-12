@@ -15,9 +15,7 @@ export const ClientOrderSchema = z
       (v) => (v === '' || v === null || v === undefined ? 1.0 : v),
       z.coerce.number().positive('سعر الصرف مطلوب').default(1.0)
     ),
-    deliveryTerms: z.string().default('FOB - ميناء الإسكندرية'),
     targetShipDate: z.string().optional().nullable(),
-    destinationPort: z.string().min(1, 'ميناء الوصول مطلوب'),
     notes: z.string().optional().nullable(),
     // Derived fields (optional in input, automatically computed in output)
     totalPriceEur: cleanOptionalNumber(),

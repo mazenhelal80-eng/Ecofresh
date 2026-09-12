@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { getAvailableFinishedGoodsBatchesPaginated } from "@/lib/data/inventory";
+import { getAvailableFinishedGoodsGroupsPaginated } from "@/lib/data/inventory";
 import { FgBatchTable } from "@/components/modules/inventory/fg-batch-table";
 import { PaginationControls } from "@/components/modules/common/pagination-controls";
 import { getCurrentUser } from "@/lib/auth";
@@ -18,7 +18,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
   const pageSize = 25;
 
   const [paginatedData, aggResult] = await Promise.all([
-    getAvailableFinishedGoodsBatchesPaginated(page, pageSize),
+    getAvailableFinishedGoodsGroupsPaginated(page, pageSize),
     prisma.finishedGoodsBatch.aggregate({
       where: { availableQty: { gt: 0 } },
       _sum: {
@@ -42,7 +42,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
         <div>
           <h1 className="text-2xl font-bold text-gray-900">مخزن المنتج التام (Finished Goods Inventory)</h1>
           <p className="text-sm text-gray-500 mt-1">
-            متابعة رصيد اللوطات الجاهزة للشحن، التكلفة الموزونة، وشجرة تتبع المزارعين المساهمين (DNA Traceability).
+            متابعة رصيد الأصناف المتاحة بالمحطات، التكلفة الموزونة، وشجرة تتبع المزارعين المساهمين (DNA Traceability).
           </p>
         </div>
       </div>
@@ -80,9 +80,9 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
         </div>
       </div>
 
-      {/* Batches Table & Pagination */}
+      {/* Grouped Table & Group-level Pagination */}
       <div className="space-y-0">
-        <FgBatchTable batches={paginatedData.batches} />
+        <FgBatchTable groups={paginatedData.groups} />
         <PaginationControls
           currentPage={paginatedData.page}
           totalPages={paginatedData.totalPages}

@@ -10,14 +10,8 @@ import { Button } from "@/components/ui/button";
 import { HardHat, Building2, DollarSign, Phone, FileText, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-interface StationOption {
-  id: string;
-  name: string;
-  location: string;
-}
-
 interface ContractorFormProps {
-  stations: StationOption[];
+  stations?: Array<{ id: string; name: string; location: string }>;
 }
 
 export function ContractorForm({ stations }: ContractorFormProps) {
@@ -58,7 +52,7 @@ export function ContractorForm({ stations }: ContractorFormProps) {
           <div>
             <CardTitle className="text-xl font-bold text-gray-900">تسجيل مقاول عمالة جديد</CardTitle>
             <p className="text-xs text-gray-500 mt-0.5">
-              إدخال بيانات مقاول الفرز والتجهيز وربطه بمحطة العمل وتعريفة الأتعاب
+              إدخال بيانات مقاول الفرز والتجهيز وتعريفة الأتعاب (مقاول مستقل يعمل عبر مختلف محطات التشغيل)
             </p>
           </div>
         </div>
@@ -72,43 +66,20 @@ export function ContractorForm({ stations }: ContractorFormProps) {
             </div>
           )}
 
-          <div className="space-y-2">
-            {/* Contractor Name */}
-            <Label htmlFor="name" className="text-sm font-semibold text-gray-700">
-              اسم المقاول / الشركة <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="مثال: مقاول أحمد للتجهيز"
-              required
-            />
-            {fieldErrors.name && (
-              <p className="text-xs text-red-500 font-medium">{fieldErrors.name[0]}</p>
-            )}
-          </div>
-
           <div className="grid gap-4 sm:grid-cols-2">
-            {/* Station Selection */}
+            {/* Contractor Name */}
             <div className="space-y-2">
-              <Label htmlFor="stationId" className="text-sm font-semibold text-gray-700">
-                محطة العمل المرتبطة <span className="text-red-500">*</span>
+              <Label htmlFor="name" className="text-sm font-semibold text-gray-700">
+                اسم المقاول / الشركة <span className="text-red-500">*</span>
               </Label>
-              <select
-                id="stationId"
-                name="stationId"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              <Input
+                id="name"
+                name="name"
+                placeholder="مثال: مقاول أحمد للتجهيز"
                 required
-              >
-                <option value="">اختر محطة التشغيل...</option>
-                {stations.map((stn) => (
-                  <option key={stn.id} value={stn.id}>
-                    {stn.name} ({stn.id}) - {stn.location}
-                  </option>
-                ))}
-              </select>
-              {fieldErrors.stationId && (
-                <p className="text-xs text-red-500 font-medium">{fieldErrors.stationId[0]}</p>
+              />
+              {fieldErrors.name && (
+                <p className="text-xs text-red-500 font-medium">{fieldErrors.name[0]}</p>
               )}
             </div>
 
@@ -160,7 +131,7 @@ export function ContractorForm({ stations }: ContractorFormProps) {
               <Input
                 id="specialization"
                 name="specialization"
-                placeholder="مثال: فرز وتجهيز خضروات"
+                placeholder="مثال: فرز وتجهيز وتجميد خضروات"
               />
               {fieldErrors.specialization && (
                 <p className="text-xs text-red-500 font-medium">{fieldErrors.specialization[0]}</p>

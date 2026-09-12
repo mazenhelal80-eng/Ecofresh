@@ -206,6 +206,7 @@ export function Step2BatchAllocation({
                       <td className="p-3">
                         <Input
                           type="number"
+                          step="0.01"
                           min={0}
                           max={maxAvail}
                           value={currentQty || ""}

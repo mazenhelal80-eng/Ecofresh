@@ -62,7 +62,11 @@ export async function reconcileTreasuryAccount(
     const isCollection =
       txn.type.includes('تحصيل') ||
       txn.type.includes('وارد') ||
-      txn.type.includes('Inflow');
+      txn.type.includes('Inflow') ||
+      txn.type.includes('سداد') ||
+      txn.type.includes('استرداد') ||
+      txn.type.includes('تسوية دائنة') ||
+      txn.type.includes('زيادة');
 
     // All transactions in the unified system are in EGP
     const amt = new Prisma.Decimal(txn.amountEgp);

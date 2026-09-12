@@ -166,6 +166,7 @@ export async function fetchStationsRaw() {
 
         return {
           ...st,
+          coldStorageCapacityKg: Number(st.coldStorageCapacityKg),
           electricityRatePerKg: Number(st.electricityRatePerKg),
           rawStockKg,
           fgStockKg,
@@ -216,7 +217,6 @@ export async function getStationById(id: string) {
     return await prisma.station.findUnique({
       where: { id },
       include: {
-        contractors: true,
         stockLocations: {
           include: {
             rawBatches: true,
@@ -244,7 +244,6 @@ export async function getStationControlCenterData(stationId: string) {
       where: { id: stationId },
       include: {
         stockLocations: true,
-        contractors: { where: { isActive: true } },
       },
     });
 
@@ -498,10 +497,24 @@ export async function getStationControlCenterData(stationId: string) {
     const totalFgKg = finishedBatches.reduce((acc, b) => acc + Number(b.availableQty || 0), 0);
     const totalSuppliesUnits = stationSupplies.reduce((acc, s) => acc + Number(s.stock || 0), 0);
 
+    // Contractors who actually worked at this station (derived from operations)
+    const activeContractorsAtStation = Array.from(
+      new Map(
+        operations
+          .filter((op: any) => op.contractor)
+          .map((op: any) => [op.contractor.id, op.contractor])
+      ).values()
+    );
+
+    const stationPayload = {
+      ...station,
+      contractors: activeContractorsAtStation,
+    };
+
     return {
       success: true,
       data: {
-        station: JSON.parse(JSON.stringify(station)),
+        station: JSON.parse(JSON.stringify(stationPayload)),
         inventory: {
           totalRawKg,
           totalFgKg,
@@ -669,7 +682,6 @@ export async function getLotTraceability(lotId: string) {
                   : null,
                 containerNo: alloc.shipment.containerNo,
                 sealNo: alloc.shipment.sealNo,
-                destinationPort: alloc.shipment.destinationPort,
                 customerName:
                   alloc.shipment.customer?.name || alloc.shipment.order?.customer?.name || 'عميل تصدير',
                 shippedQtyKg: Number(alloc.qtyKg),
@@ -804,7 +816,6 @@ export async function getLotTraceability(lotId: string) {
             : null,
           containerNo: alloc.shipment.containerNo,
           sealNo: alloc.shipment.sealNo,
-          destinationPort: alloc.shipment.destinationPort,
           customerName:
             alloc.shipment.customer?.name || alloc.shipment.order?.customer?.name || 'عميل تصدير',
           shippedQtyKg: Number(alloc.qtyKg),

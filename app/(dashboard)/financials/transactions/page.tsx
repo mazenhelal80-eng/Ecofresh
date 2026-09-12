@@ -8,7 +8,7 @@ import { TransactionsTable } from "@/components/modules/financials/transactions-
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "سندات القبض والصرف — Nilotic Frost ERP",
+  title: "سندات القبض والصرف | EcoFresh",
 };
 
 export default async function TransactionsPage() {

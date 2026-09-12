@@ -40,7 +40,7 @@ export function Header({ user }: HeaderProps) {
     <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-[#c1c8c2] bg-white px-4 shadow-sm md:px-5">
       {/* Right side: Mobile Menu Toggle & Breadcrumbs */}
       <div className="flex items-center gap-3">
-        <MobileNav />
+        <MobileNav userRole={user?.role} />
         <div className="hidden sm:block">
           <Breadcrumbs />
         </div>
@@ -85,17 +85,15 @@ export function Header({ user }: HeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer gap-2 text-xs">
-              <User className="h-4 w-4 text-gray-500" />
-              <span>الملف الشخصي</span>
+            <DropdownMenuItem asChild className="cursor-pointer gap-2 text-xs">
+              <a href="/settings">
+                <User className="h-4 w-4 text-gray-500" />
+                <span>الملف الشخصي والإعدادات</span>
+              </a>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer gap-2 text-xs">
               <ShieldCheck className="h-4 w-4 text-gray-500" />
               <span>الصلاحيات: {userRole}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer gap-2 text-xs">
-              <Building className="h-4 w-4 text-gray-500" />
-              <span>المحطة الرئيسية</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

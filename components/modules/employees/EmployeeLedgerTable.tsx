@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ArrowDownLeft, ArrowUpRight, ExternalLink, FileText, Landmark } from "lucide-react";
-import { EmployeeStatementRow } from "@/lib/data/employee-ledger";
+import { EmployeeStatementRow } from "@/types/employee";
 import { formatCurrency } from "@/lib/currency";
 
 interface EmployeeLedgerTableProps {

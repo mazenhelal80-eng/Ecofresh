@@ -10,7 +10,7 @@ import { getCurrentUser } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "الشحنات والتصدير — Nilotic Frost ERP",
+  title: "الشحنات والتصدير | EcoFresh",
 };
 
 interface ShipmentsPageProps {

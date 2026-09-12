@@ -24,7 +24,7 @@ export default async function ClientOrdersPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">طلبيات التصدير الدولية (Export Client Orders)</h1>
           <p className="text-sm text-gray-500 mt-1">
-            إدارة ومتابعة طلبية العملاء الدولية وشروط التسليم ونسب الإيفاء بالحاويات
+            إدارة ومتابعة طلبيات العملاء الدولية ونسب الإيفاء بالحاويات
           </p>
         </div>
         <Button asChild className="bg-[#012d1d] hover:bg-[#02472e] text-white gap-2">
@@ -104,7 +104,6 @@ export default async function ClientOrdersPage() {
                     <th className="p-3">المنتج والمواصفة</th>
                     <th className="p-3">الكمية (كجم)</th>
                     <th className="p-3">السعر</th>
-                    <th className="p-3">ميناء الوصول</th>
                     <th className="p-3">نسبة الإيفاء</th>
                     <th className="p-3">الحالة</th>
                   </tr>
@@ -143,7 +142,6 @@ export default async function ClientOrdersPage() {
                         <td className="p-3 font-mono font-bold text-[#012d1d]">
                           {formatCurrency(Number(o.unitPriceEur))} / كجم
                         </td>
-                        <td className="p-3 text-xs text-gray-700">{o.destinationPort}</td>
                         <td className="p-3">
                           <div className="w-32 space-y-1">
                             <div className="flex items-center justify-between text-xs font-semibold">

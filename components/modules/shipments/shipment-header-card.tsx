@@ -130,14 +130,11 @@ export function ShipmentHeaderCard({ shipment }: ShipmentHeaderCardProps) {
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">
           <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
             <Anchor className="w-3.5 h-3.5 text-indigo-600" />
-            الخط الملاحي وميناء الوصول
+            الخط الملاحي الناقل
           </span>
           <div className="text-sm font-bold text-gray-900 truncate">
             {shipment.shippingLine}
           </div>
-          <span className="text-[10px] text-indigo-700 font-semibold block">
-            ميناء الوصول: {shipment.destinationPort}
-          </span>
         </div>
 
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">

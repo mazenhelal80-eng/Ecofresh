@@ -16,8 +16,9 @@ import { Button } from "@/components/ui/button";
 import { cancelProcessingOperation } from "@/actions/processing";
 import { cancelStockTransfer } from "@/actions/transfers";
 import { cancelShipment } from "@/actions/shipments";
+import { cancelDirectPurchaseDeal } from "@/actions/direct-deals";
 
-export type OperationType = "processing" | "transfer" | "shipment";
+export type OperationType = "processing" | "transfer" | "shipment" | "direct-deal";
 
 interface CancelOperationModalProps {
   operationType: OperationType;
@@ -51,6 +52,8 @@ export function CancelOperationModal({
         return "إلغاء وعكس التحويل المخزني بين المحطات";
       case "shipment":
         return "إلغاء وعكس شحنة التصدير";
+      case "direct-deal":
+        return "إلغاء وعكس صفقة شراء محصول جاهز";
     }
   };
 
@@ -83,6 +86,8 @@ export function CancelOperationModal({
         res = await cancelStockTransfer(operationId, trimmedReason);
       } else if (operationType === "shipment") {
         res = await cancelShipment(operationId, trimmedReason);
+      } else if (operationType === "direct-deal") {
+        res = await cancelDirectPurchaseDeal(operationId, trimmedReason);
       } else {
         res = { success: false, error: "نوع العملية غير معروف" };
       }

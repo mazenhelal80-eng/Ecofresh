@@ -22,7 +22,6 @@ interface CustomerOption {
   code: string;
   name: string;
   country: string;
-  destinationPort: string;
   currency: string;
   agreements: Array<{
     id: number;
@@ -82,8 +81,6 @@ export function ClientOrderForm({
       orderedQtyKg: initialData?.orderedQtyKg,
       unitPriceEur: initialData?.unitPriceEur,
       fxRate: 1.0,
-      deliveryTerms: initialData?.deliveryTerms || "FOB - ميناء الإسكندرية",
-      destinationPort: initialData?.destinationPort || "",
       notes: initialData?.notes || "",
     },
   });
@@ -95,13 +92,6 @@ export function ClientOrderForm({
   const unitPriceEur = Number(form.watch("unitPriceEur")) || 0;
 
   const totalValueEgp = orderedQtyKg * unitPriceEur;
-
-  // Auto-fill details when customer changes
-  const handleCustomerChange = (cust: CustomerOption) => {
-    if (cust.destinationPort) {
-      form.setValue("destinationPort", cust.destinationPort);
-    }
-  };
 
   async function onSubmit(values: ClientOrderFormValues) {
     setIsSubmitting(true);
@@ -189,15 +179,13 @@ export function ClientOrderForm({
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
-                            const cust = customers.find((c) => c.id === e.target.value);
-                            if (cust) handleCustomerChange(cust);
                           }}
                           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           <option value="" disabled>-- اختر عميل التصدير --</option>
                           {customers.map((c) => (
                             <option key={c.id} value={c.id}>
-                              {c.name} ({c.country} — {c.destinationPort})
+                              {c.name} ({c.country})
                             </option>
                           ))}
                         </select>
@@ -308,7 +296,7 @@ export function ClientOrderForm({
                       <FormControl>
                         <Input
                           type="number"
-                          step="500"
+                          step="0.01"
                           placeholder="أدخل الكمية المطلوبة (كجم)"
                           {...field}
                           value={field.value ?? ""}
@@ -342,45 +330,7 @@ export function ClientOrderForm({
                   )}
                 />
 
-                {/* Destination Port */}
-                <FormField
-                  control={form.control}
-                  name="destinationPort"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-semibold text-gray-700">ميناء الوصول النهائي *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="ميناء الوصول النهائي (يُحدد تلقائياً أو يُدخل يدوياً)" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                {/* Delivery Terms Select */}
-                <FormField
-                  control={form.control}
-                  name="deliveryTerms"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel className="font-semibold text-gray-700">شروط التسليم والشحن الدولية (Incoterms) *</FormLabel>
-                      <FormControl>
-                        <select
-                          {...field}
-                          value={field.value || "FOB - ميناء الإسكندرية"}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        >
-                          <option value="FOB - ميناء الإسكندرية">FOB - تسليم على ظهر السفينة (ميناء الإسكندرية / الدخيلة)</option>
-                          <option value="CIF - ميناء الوصول النهائي">CIF - التكلفة والتأمين والشحن حتى ميناء المشتري</option>
-                          <option value="CFR - ميناء الوصول النهائي">CFR - التكلفة والشحن دون تأمين</option>
-                          <option value="EXW - أرض المحطة / المصنع">EXW - تسليم أرض المحطة (مصر)</option>
-                          <option value="FCA - محطة الشحن">FCA - تسليم الناقل الحر</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* Notes */}
                 <FormField

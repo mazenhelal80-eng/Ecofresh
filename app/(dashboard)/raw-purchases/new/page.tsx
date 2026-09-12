@@ -3,7 +3,7 @@ import { getStationsForRawSelect, getSuppliersForRawSelect } from "@/actions/raw
 import { RawArrivalForm } from "@/components/modules/procurement/raw-arrival-form";
 
 export const metadata = {
-  title: "ميزان البسكول ووارد الخام — Nilotic Frost ERP",
+  title: "ميزان البسكول ووارد الخام | EcoFresh",
 };
 
 export default async function NewRawArrivalPage() {

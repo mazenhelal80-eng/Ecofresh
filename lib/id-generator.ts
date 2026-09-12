@@ -1,7 +1,7 @@
 /**
  * lib/id-generator.ts
  *
- * Concurrency-Safe Sequential ID Generator for Nilotic Frost ERP Master Data.
+ * Concurrency-Safe Sequential ID Generator for EcoFresh ERP Master Data.
  *
  * Key Architecture:
  * 1. PostgreSQL Advisory Transaction Locks (`pg_advisory_xact_lock`):

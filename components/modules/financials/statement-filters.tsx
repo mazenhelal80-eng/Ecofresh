@@ -24,6 +24,13 @@ export function StatementFilters({
   const [dateFrom, setDateFrom] = useState(searchParams.get("dateFrom") || "");
   const [dateTo, setDateTo] = useState(searchParams.get("dateTo") || "");
 
+  React.useEffect(() => {
+    const queryFrom = searchParams.get("dateFrom") || "";
+    const queryTo = searchParams.get("dateTo") || "";
+    if (queryFrom !== dateFrom) setDateFrom(queryFrom);
+    if (queryTo !== dateTo) setDateTo(queryTo);
+  }, [searchParams]);
+
   const applyFilters = (from?: string, to?: string) => {
     const params = new URLSearchParams(searchParams.toString());
     const f = from !== undefined ? from : dateFrom;
@@ -37,12 +44,14 @@ export function StatementFilters({
 
     params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
+    router.refresh();
   };
 
   const resetFilters = () => {
     setDateFrom("");
     setDateTo("");
     router.push(pathname);
+    router.refresh();
   };
 
   const setPreset = (preset: "thisMonth" | "last30Days" | "thisYear" | "all") => {
@@ -75,6 +84,7 @@ export function StatementFilters({
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", newPage.toString());
     router.push(`${pathname}?${params.toString()}`);
+    router.refresh();
   };
 
   return (

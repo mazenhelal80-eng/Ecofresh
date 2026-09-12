@@ -18,11 +18,11 @@ export async function generateMetadata({ params }: StationPageProps): Promise<Me
   const result = await getStationControlCenterData(params.stationId);
   if (!result.success || !result.data?.station) {
     return {
-      title: 'مركز التحكم بالمحطة — Nilotic Frost ERP',
+      title: 'مركز التحكم بالمحطة | EcoFresh',
     };
   }
   return {
-    title: `${result.data.station.name} | مركز التحكم والمخزون — Nilotic Frost ERP`,
+    title: `${result.data.station.name} | مركز التحكم والمخزون | EcoFresh`,
   };
 }
 

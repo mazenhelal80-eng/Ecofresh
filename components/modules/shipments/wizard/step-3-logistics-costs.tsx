@@ -156,6 +156,8 @@ export function Step3LogisticsCosts({
               <Label className="font-bold text-gray-700 text-xs">نولون النقل البري للميناء (Inland Trucking)</Label>
               <Input
                 type="number"
+                step="0.01"
+                min="0"
                 value={costs.inlandTrucking || 0}
                 onChange={(e) => handleCostChange("inlandTrucking", parseFloat(e.target.value) || 0)}
                 className="font-mono text-xs"
@@ -166,6 +168,8 @@ export function Step3LogisticsCosts({
               <Label className="font-bold text-gray-700 text-xs">النولون البحري (Ocean Freight)</Label>
               <Input
                 type="number"
+                step="0.01"
+                min="0"
                 value={costs.oceanFreight || 0}
                 onChange={(e) => handleCostChange("oceanFreight", parseFloat(e.target.value) || 0)}
                 className="font-mono text-xs"
@@ -176,6 +180,8 @@ export function Step3LogisticsCosts({
               <Label className="font-bold text-gray-700 text-xs">التخليص الجمركي والتثمين (Customs Clearance)</Label>
               <Input
                 type="number"
+                step="0.01"
+                min="0"
                 value={costs.customsClearance || 0}
                 onChange={(e) => handleCostChange("customsClearance", parseFloat(e.target.value) || 0)}
                 className="font-mono text-xs"
@@ -186,6 +192,8 @@ export function Step3LogisticsCosts({
               <Label className="font-bold text-gray-700 text-xs">شهادات الفحص وسحب العينات (Inspection & Phyto)</Label>
               <Input
                 type="number"
+                step="0.01"
+                min="0"
                 value={costs.inspectionCertificates || 0}
                 onChange={(e) => handleCostChange("inspectionCertificates", parseFloat(e.target.value) || 0)}
                 className="font-mono text-xs"
@@ -196,6 +204,8 @@ export function Step3LogisticsCosts({
               <Label className="font-bold text-gray-700 text-xs">رسوم الميناء والتفريغ (Terminal Port Charges)</Label>
               <Input
                 type="number"
+                step="0.01"
+                min="0"
                 value={costs.portTerminalCharges || 0}
                 onChange={(e) => handleCostChange("portTerminalCharges", parseFloat(e.target.value) || 0)}
                 className="font-mono text-xs"

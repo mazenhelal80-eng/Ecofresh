@@ -53,6 +53,7 @@ export function PackagingPurchaseForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stations, setStations] = useState<StationOption[]>(initialStations);
   const [loadingStations, setLoadingStations] = useState(initialStations.length === 0);
+  const [submissionId] = useState(() => `SUB-PKG-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`);
 
   // Contextual station fetching if not passed via props
   useEffect(() => {
@@ -85,6 +86,7 @@ export function PackagingPurchaseForm({
       unitPrice: Number(defaultSupply?.unitPrice || 0),
       invoiceNo: "",
       date: new Date().toISOString().substring(0, 10),
+      submissionId,
     },
   });
 
@@ -280,7 +282,7 @@ export function PackagingPurchaseForm({
                         الكمية المشتراة ({currentSupply?.unit || "وحدة"}) *
                       </FormLabel>
                       <FormControl>
-                        <Input type="number" step="1" min="1" placeholder="1000" {...field} />
+                        <Input type="number" step="any" min="0.001" placeholder="1000" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -164,7 +164,7 @@ export function SupplyForm({ stations = [] }: SupplyFormProps) {
                     <FormControl>
                       <Input
                         type="number"
-                        step="0.5"
+                        step="0.01"
                         placeholder="10.0"
                         value={field.value ?? ""}
                         onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
@@ -198,7 +198,7 @@ export function SupplyForm({ stations = [] }: SupplyFormProps) {
                   <FormItem>
                     <FormLabel className="font-semibold text-gray-700">رصيد المخزون الأولي</FormLabel>
                     <FormControl>
-                      <Input type="number" step="1" placeholder="2000" {...field} />
+                      <Input type="number" step="0.01" placeholder="2000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -239,7 +239,7 @@ export function SupplyForm({ stations = [] }: SupplyFormProps) {
                   <FormItem className="md:col-span-2">
                     <FormLabel className="font-semibold text-gray-700">سعر الوحدة الشراء (ج.م) *</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.50" placeholder="18.00" {...field} />
+                      <Input type="number" step="0.01" placeholder="18.00" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

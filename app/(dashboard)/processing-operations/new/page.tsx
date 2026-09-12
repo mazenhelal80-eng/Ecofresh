@@ -5,7 +5,7 @@ import { ProcessingWizard } from "@/components/modules/processing/wizard/process
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "معالج إضافة عملية تشغيل جديدة — Nilotic Frost ERP",
+  title: "معالج إضافة عملية تشغيل جديدة | EcoFresh",
 };
 
 export default async function NewProcessingOperationPage() {

@@ -269,9 +269,6 @@ export async function createProcessingOperation(payload: unknown) {
       if (!contractor || !contractor.isActive) {
         throw new Error(`المقاول المحدد (${data.contractorId}) غير موجود أو غير نشط`);
       }
-      if (contractor.stationId && contractor.stationId !== data.stationId) {
-        throw new Error(`المقاول (${contractor.name}) غير تابع لمحطة التشغيل المحددة`);
-      }
       const contractorRate = Number(contractor.tariffRatePerKg);
       const contractorCost = Math.round(outputKg * contractorRate * 100) / 100;
 
@@ -431,23 +428,28 @@ export async function createProcessingOperation(payload: unknown) {
   }
 }
 
-export async function getProcessingOperationsPaginated(page: number = 1, pageSize: number = 25) {
+export async function getProcessingOperationsPaginated(
+  page: number = 1,
+  pageSize: number = 25,
+  where: any = {}
+) {
   try {
     const skip = (page - 1) * pageSize;
     const [operations, totalCount] = await Promise.all([
       prisma.processingOperation.findMany({
+        where,
         include: {
           station: true,
           contractor: true,
           rawIssues: true,
         },
         orderBy: {
-          createdAt: 'desc',
+          date: 'desc',
         },
         skip,
         take: pageSize,
       }),
-      prisma.processingOperation.count(),
+      prisma.processingOperation.count({ where }),
     ]);
 
     return {

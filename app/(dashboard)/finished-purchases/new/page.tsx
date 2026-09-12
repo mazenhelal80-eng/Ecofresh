@@ -4,16 +4,18 @@ import {
   getProductsForDirectDealSelect,
   getPackagingSuppliesSelect,
 } from "@/actions/direct-deals";
+import { getTreasuryAccounts } from "@/actions/treasury";
 import { DirectDealForm } from "@/components/modules/procurement/direct-deal-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewFinishedPurchasePage() {
-  const [suppliers, stations, products, packagingSupplies] = await Promise.all([
+  const [suppliers, stations, products, packagingSupplies, treasuryAccounts] = await Promise.all([
     getFinishedGoodsSuppliersSelect(),
     getStationsForSelect(),
     getProductsForDirectDealSelect(),
     getPackagingSuppliesSelect(),
+    getTreasuryAccounts(),
   ]);
 
   return (
@@ -30,6 +32,7 @@ export default async function NewFinishedPurchasePage() {
         stations={stations}
         products={products}
         packagingSupplies={packagingSupplies}
+        treasuryAccounts={treasuryAccounts}
       />
     </div>
   );

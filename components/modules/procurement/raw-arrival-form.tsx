@@ -41,6 +41,7 @@ export function RawArrivalForm({
 }: RawArrivalFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionId] = useState(() => `SUB-RAW-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`);
 
   const form = useForm<RawArrivalFormValues>({
     resolver: zodResolver(RawArrivalSchema),
@@ -56,6 +57,7 @@ export function RawArrivalForm({
       truckPlate: initialData?.truckPlate || "",
       driverName: initialData?.driverName || "",
       notes: initialData?.notes || "",
+      submissionId,
     },
   });
 
@@ -267,7 +269,7 @@ export function RawArrivalForm({
                       <FormControl>
                         <Input
                           type="number"
-                          step="10"
+                          step="any"
                           placeholder="أدخل الوزن القائم (كجم)"
                           {...field}
                           value={field.value ?? ""}
@@ -289,7 +291,7 @@ export function RawArrivalForm({
                       <FormControl>
                         <Input
                           type="number"
-                          step="10"
+                          step="any"
                           placeholder="وزن السيارة فارغة (0 إذا تم استلام صافي)"
                           {...field}
                           value={field.value ?? ""}
@@ -311,7 +313,7 @@ export function RawArrivalForm({
                       <FormControl>
                         <Input
                           type="number"
-                          step="0.1"
+                          step="any"
                           placeholder="0.00"
                           {...field}
                           value={field.value ?? ""}
@@ -333,7 +335,7 @@ export function RawArrivalForm({
                       <FormControl>
                         <Input
                           type="number"
-                          step="50"
+                          step="any"
                           placeholder="0.00 (اختياري)"
                           {...field}
                           value={field.value ?? ""}
@@ -355,7 +357,7 @@ export function RawArrivalForm({
                       <FormControl>
                         <Input
                           type="number"
-                          step="0.1"
+                          step="0.01"
                           placeholder="مثال: 8.5 (اختياري)"
                           value={field.value ?? ""}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}

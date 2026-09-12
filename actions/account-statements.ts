@@ -449,7 +449,7 @@ export async function getAccountStatementReport(params: StatementParams) {
           operationType: 'شراء مستلزمات وتعبئة',
           date: p.createdAt.toISOString().split('T')[0],
           codeOrDoc: p.invoiceNo || p.id,
-          details: `${p.supply?.name || 'مستلزم'} (${p.qty} ${p.supply?.unit || 'قطعة'})`,
+          details: `${p.supply?.name || 'مستلزم'} (${Number(p.qty)} ${p.supply?.unit || 'قطعة'})`,
           amountOrQty: `${Number(p.totalCost).toLocaleString()} ج.م`,
           status: 'معتمد',
           viewLink: `/packaging-purchases`,

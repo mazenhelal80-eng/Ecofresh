@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "بطاقة اللوط وتقرير فحص الجودة — Nilotic Frost ERP",
+  title: "بطاقة اللوط وتقرير فحص الجودة | EcoFresh",
 };
 
 interface BatchDetailsPageProps {

@@ -5,13 +5,13 @@ import { TransferModal } from "@/components/modules/inventory/transfer-modal";
 import { TransferLogTable } from "@/components/modules/inventory/transfer-log-table";
 import { PaginationControls } from "@/components/modules/common/pagination-controls";
 import { Card, CardContent } from "@/components/ui/card";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, requirePagePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "التحويلات بين المحطات — Nilotic Frost ERP",
+  title: "التحويلات بين المحطات | EcoFresh",
 };
 
 interface InterStationTransfersPageProps {
@@ -21,7 +21,7 @@ interface InterStationTransfersPageProps {
 }
 
 export default async function InterStationTransfersPage({ searchParams }: InterStationTransfersPageProps) {
-  const user = await getCurrentUser();
+  const user = await requirePagePermission('inventory.transfer');
   const page = Math.max(1, parseInt(searchParams.page || "1", 10));
   const pageSize = 25;
 
@@ -49,7 +49,7 @@ export default async function InterStationTransfersPage({ searchParams }: InterS
           <div>
             <h1 className="text-2xl font-bold text-gray-900">سجل التحويلات اللوجستية بين المحطات</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              إصدار وتتبع أذون نقل المنتجات التامة المبردة بين محطات Nilotic Frost التابعة
+              إصدار وتتبع أذون نقل المنتجات التامة المبردة بين محطات EcoFresh التابعة
             </p>
           </div>
         </div>

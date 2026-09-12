@@ -238,16 +238,6 @@ export function TransferModal({
       return;
     }
 
-    if (!formData.truckPlate || formData.truckPlate.trim().length < 2) {
-      setErrorMessage("رقم لوحة سيارة النقل مطلوب");
-      return;
-    }
-
-    if (!formData.driverName || formData.driverName.trim().length < 2) {
-      setErrorMessage("اسم السائق مطلوب");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const res = await createStockTransfer(formData);
@@ -526,7 +516,7 @@ export function TransferModal({
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-gray-700 flex items-center gap-1">
                 <Truck className="h-3.5 w-3.5 text-gray-500" />
-                <span>لوحة سيارة النقل</span> <span className="text-red-500">*</span>
+                <span>لوحة سيارة النقل</span> <span className="text-[11px] text-gray-400 font-normal">(اختياري)</span>
               </Label>
               <Input
                 type="text"
@@ -540,7 +530,7 @@ export function TransferModal({
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-gray-700 flex items-center gap-1">
                 <User className="h-3.5 w-3.5 text-gray-500" />
-                <span>اسم السائق</span> <span className="text-red-500">*</span>
+                <span>اسم السائق</span> <span className="text-[11px] text-gray-400 font-normal">(اختياري)</span>
               </Label>
               <Input
                 type="text"

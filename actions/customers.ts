@@ -26,6 +26,8 @@ export async function createCustomer(formData: FormData) {
       return await tx.customer.create({
         data: {
           ...validated.data,
+          creditLimit: validated.data.creditLimit ?? 0,
+          paymentTerms: validated.data.paymentTerms || 'غير محدد',
           id: generatedId,
           code,
         },
@@ -82,7 +84,6 @@ export async function getCustomersPaginated(page: number = 1, pageSize: number =
             { name: { contains: search, mode: 'insensitive' } },
             { code: { contains: search, mode: 'insensitive' } },
             { country: { contains: search, mode: 'insensitive' } },
-            { destinationPort: { contains: search, mode: 'insensitive' } },
           ],
         }
       : {};
@@ -95,7 +96,6 @@ export async function getCustomersPaginated(page: number = 1, pageSize: number =
           code: true,
           name: true,
           country: true,
-          destinationPort: true,
           currency: true,
           paymentTerms: true,
           creditLimit: true,
@@ -122,7 +122,7 @@ export async function getCustomersPaginated(page: number = 1, pageSize: number =
     const formattedCustomers = customers.map((c) => ({
       ...c,
       currency: 'EGP',
-      creditLimit: Number(c.creditLimit),
+      creditLimit: Number(c.creditLimit || 0),
       agreements: Array(c._count.agreements).fill({}),
     }));
 
@@ -236,7 +236,10 @@ export async function updateCustomer(id: string, formData: FormData) {
   try {
     const customer = await prisma.customer.update({
       where: { id },
-      data: validated.data,
+      data: {
+        ...validated.data,
+        paymentTerms: validated.data.paymentTerms || undefined,
+      },
     });
     safeRevalidatePath('/customers');
     safeRevalidatePath(`/customers/${id}`);

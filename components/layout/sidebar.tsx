@@ -7,14 +7,31 @@ import { navGroups } from "@/config/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { can } from "@/lib/permissions";
+import { UserRole } from "@prisma/client";
 
 interface SidebarProps {
+  userRole?: UserRole | string | null;
   onItemClick?: () => void;
   className?: string;
 }
 
-export function Sidebar({ onItemClick, className }: SidebarProps) {
+export function Sidebar({ userRole = UserRole.OWNER, onItemClick, className }: SidebarProps) {
   const pathname = usePathname();
+
+  // Filter groups and items dynamically based on the current user's role/permissions
+  const visibleGroups = navGroups
+    .map((group) => {
+      const filteredItems = group.items.filter((item) => {
+        if (!item.permission) return true;
+        return can(userRole, item.permission);
+      });
+      return {
+        ...group,
+        items: filteredItems,
+      };
+    })
+    .filter((group) => group.items.length > 0);
 
   return (
     <aside
@@ -34,8 +51,8 @@ export function Sidebar({ onItemClick, className }: SidebarProps) {
             <Snowflake className="h-5 w-5 text-[#0054cd]" />
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-bold leading-tight tracking-wide text-white">Nilotic Frost</span>
-            <span className="text-[11px] text-emerald-200/80 font-normal">نظام إدارة التصدير الموحد</span>
+            <span className="text-base font-bold leading-tight tracking-wide text-white">EcoFresh</span>
+            <span className="text-[11px] text-emerald-200/80 font-normal">إيكو فريش — إدارة التصدير</span>
           </div>
         </Link>
       </div>
@@ -43,7 +60,7 @@ export function Sidebar({ onItemClick, className }: SidebarProps) {
       {/* Scrollable Navigation Items */}
       <ScrollArea className="flex-1 px-2.5 py-3">
         <div className="space-y-4">
-          {navGroups.map((group, groupIndex) => (
+          {visibleGroups.map((group, groupIndex) => (
             <div key={group.title} className="space-y-1">
               <h3 className="px-2.5 text-[11px] font-bold text-emerald-300/80 uppercase tracking-wider">
                 {group.title}
@@ -83,7 +100,7 @@ export function Sidebar({ onItemClick, className }: SidebarProps) {
                   );
                 })}
               </div>
-              {groupIndex < navGroups.length - 1 && (
+              {groupIndex < visibleGroups.length - 1 && (
                 <Separator className="my-2 bg-emerald-900/50" />
               )}
             </div>

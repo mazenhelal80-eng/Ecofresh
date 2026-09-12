@@ -71,9 +71,7 @@ export async function addClientOrder(payload: unknown) {
           unfulfilledQtyKg: data.orderedQtyKg,
           unitPriceEur: data.unitPriceEur,
           fxRate: data.fxRate,
-          deliveryTerms: data.deliveryTerms,
           targetShipDate: data.targetShipDate ? new Date(data.targetShipDate) : null,
-          destinationPort: data.destinationPort,
           status: 'جديدة',
           notes: data.notes,
           createdById: user.id,
@@ -133,7 +131,6 @@ export async function getCustomersForOrderSelect() {
         code: true,
         name: true,
         country: true,
-        destinationPort: true,
         currency: true,
         agreements: {
           include: {

@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, HardHat, Building2, DollarSign, Calculator } from "lucide-react";
 
+import { requirePagePermission } from "@/lib/auth";
+
 export const dynamic = "force-dynamic";
 
 export default async function ContractorsPage() {
+  await requirePagePermission('contractors.view');
   const contractors = await getContractors();
 
   const totalContractors = contractors.length;
@@ -80,10 +83,10 @@ export default async function ContractorsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">
-              {new Set(contractors.map((c) => c.stationId).filter(Boolean)).size} محطات
+              {new Set(contractors.flatMap((c) => (c.stations || []).map((s) => s.id))).size} محطات
             </div>
             <p className="mt-1 text-xs text-gray-500">
-              مرتبطة بمقاولي تشغيل معتمدين
+              شهدت عمليات فرز وتجهيز بمقاولين
             </p>
           </CardContent>
         </Card>

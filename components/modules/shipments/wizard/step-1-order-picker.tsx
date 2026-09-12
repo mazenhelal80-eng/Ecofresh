@@ -107,10 +107,10 @@ export function Step1OrderPicker({
 
             <div className="bg-white p-3 rounded-lg border border-gray-200">
               <span className="text-[11px] text-gray-500 block font-sans flex items-center gap-1">
-                <Globe className="h-3 w-3" /> الدولة والميناء
+                <Globe className="h-3 w-3" /> دولة العميل
               </span>
               <strong className="text-xs text-gray-800 font-sans font-bold">
-                {selectedOrder.customer.country} — {selectedOrder.destinationPort || selectedOrder.customer.destinationPort}
+                {selectedOrder.customer.country}
               </strong>
             </div>
 
@@ -127,13 +127,10 @@ export function Step1OrderPicker({
             </div>
 
             <div className="bg-white p-3 rounded-lg border border-gray-200">
-              <span className="text-[11px] text-gray-500 block font-sans">نوع التسليم</span>
-              <strong className="text-xs text-blue-700 font-bold">
-                {selectedOrder.deliveryTerms || "FOB"}
+              <span className="text-[11px] text-gray-500 block font-sans">مواصفة التعبئة</span>
+              <strong className="text-xs text-blue-700 font-bold block truncate">
+                {selectedOrder.packagingSpec}
               </strong>
-              <span className="text-[10px] text-gray-500 block">
-                مواصفة التعبئة: {selectedOrder.packagingSpec}
-              </span>
             </div>
           </div>
 

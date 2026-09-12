@@ -27,7 +27,6 @@ export async function createContractor(formData: FormData) {
           ...validated.data,
           id: generatedId,
         },
-        include: { station: true },
       });
     });
 
@@ -37,9 +36,6 @@ export async function createContractor(formData: FormData) {
       message: `تم تسجيل المقاول ${contractor.name} (${contractor.id}) بتعريفة ${contractor.tariffRatePerKg} ج.م/كجم`,
     };
   } catch (error: any) {
-    if (error.code === 'P2003') {
-      return { success: false, error: 'محطة العمل المحددة غير موجودة' };
-    }
     if (error.code === 'P2002') {
       return { success: false, error: 'كود المقاول مسجل مسبقاً' };
     }
@@ -51,21 +47,46 @@ export async function getContractors() {
   try {
     const contractors = await prisma.contractor.findMany({
       include: {
-        station: true,
+        operations: {
+          select: {
+            stationId: true,
+            finishedOutputKg: true,
+            contractorCost: true,
+            station: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    return contractors.map((c) => ({
-      ...c,
-      tariffRatePerKg: Number(c.tariffRatePerKg),
-      station: c.station ? {
-        ...c.station,
-        electricityRatePerKg: Number(c.station.electricityRatePerKg),
-      } : null,
-    }));
+    return contractors.map((c) => {
+      const stationMap = new Map<string, { id: string; name: string }>();
+      let totalKg = 0;
+      let totalCost = 0;
+      for (const op of c.operations) {
+        if (op.station) {
+          stationMap.set(op.station.id, op.station);
+        }
+        totalKg += Number(op.finishedOutputKg || 0);
+        totalCost += Number(op.contractorCost || 0);
+      }
+
+      return {
+        ...c,
+        tariffRatePerKg: Number(c.tariffRatePerKg),
+        operationsCount: c.operations.length,
+        totalOutputKg: totalKg,
+        totalCost: totalCost,
+        stations: Array.from(stationMap.values()),
+      };
+    });
   } catch (error) {
     console.error('Failed to fetch contractors:', error);
     return [];
@@ -107,7 +128,6 @@ export async function updateContractor(id: string, formData: FormData) {
     const contractor = await prisma.contractor.update({
       where: { id },
       data: validated.data,
-      include: { station: true },
     });
     safeRevalidatePath('/contractors');
     return { success: true, message: `تم تعديل بيانات المقاول ${contractor.name} بنجاح` };

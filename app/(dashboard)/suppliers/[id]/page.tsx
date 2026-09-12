@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "تفاصيل وحساب المورد — Nilotic Frost ERP",
+  title: "تفاصيل وحساب المورد | EcoFresh",
 };
 
 interface SupplierDetailsPageProps {
@@ -169,26 +169,29 @@ export default async function SupplierDetailsPage({ params }: SupplierDetailsPag
               </div>
             ) : (
               <div className="divide-y divide-gray-100 text-xs font-mono">
-                {supplier.deals.map((d) => (
-                  <div key={d.dealId} className="p-3.5 flex items-center justify-between hover:bg-gray-50/60">
-                    <div>
-                      <span className="font-bold text-gray-900 block font-sans">
-                        صفقة جاهز: {d.productName}
-                      </span>
-                      <span className="text-[11px] text-gray-400">
-                        {d.dealId} • {new Date(d.date).toLocaleDateString("ar-EG")}
-                      </span>
+                {supplier.deals.map((d) => {
+                  const isCancelled = d.status === "ملغاة";
+                  return (
+                    <div key={d.dealId} className={`p-3.5 flex items-center justify-between hover:bg-gray-50/60 ${isCancelled ? "opacity-60 bg-rose-50/30" : ""}`}>
+                      <div>
+                        <span className={`font-bold block font-sans ${isCancelled ? "line-through text-gray-500" : "text-gray-900"}`}>
+                          صفقة جاهز: {d.productName} {isCancelled && <span className="text-xs text-rose-600 font-bold font-sans">(ملغاة)</span>}
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                          {d.dealId} • {new Date(d.date).toLocaleDateString("ar-EG")}
+                        </span>
+                      </div>
+                      <div className="text-left">
+                        <span className={`font-bold block ${isCancelled ? "line-through text-gray-400" : "text-blue-700"}`}>
+                          {Number(d.totalCost).toLocaleString()} ج.م
+                        </span>
+                        <span className="text-[11px] text-gray-500 font-sans">
+                          {Number(d.qtyKg).toLocaleString()} كجم
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <span className="font-bold text-blue-700 block">
-                        {Number(d.totalCost).toLocaleString()} ج.م
-                      </span>
-                      <span className="text-[11px] text-gray-500 font-sans">
-                        {Number(d.qtyKg).toLocaleString()} كجم
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {supplier.packagingPurchases.map((pkg) => (
                   <div key={pkg.id} className="p-3.5 flex items-center justify-between hover:bg-gray-50/60">
@@ -205,7 +208,7 @@ export default async function SupplierDetailsPage({ params }: SupplierDetailsPag
                         {Number(pkg.totalCost).toLocaleString()} ج.م
                       </span>
                       <span className="text-[11px] text-gray-500 font-sans">
-                        {pkg.qty.toLocaleString()} وحدة
+                        {Number(pkg.qty).toLocaleString()} وحدة
                       </span>
                     </div>
                   </div>

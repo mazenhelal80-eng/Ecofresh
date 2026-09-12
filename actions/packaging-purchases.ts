@@ -24,7 +24,7 @@ export async function addPackagingPurchase(payload: unknown) {
   }
 
   const data = validated.data;
-  const totalCost = data.qty * data.unitPrice;
+  const totalCost = Number((data.qty * data.unitPrice).toFixed(4));
   const pDate = data.date ? new Date(data.date) : new Date();
 
   try {
@@ -39,13 +39,56 @@ export async function addPackagingPurchase(payload: unknown) {
       }
       const targetStationId = station.id;
 
-      // 2. Resolve and verify SUPPLIES StockLocation for target station
+      // 2. Resolve Supplier
+      const supplier = await tx.supplier.findUnique({ where: { id: data.supplierId } });
+      if (!supplier) {
+        throw new Error(`المورد المحدد (${data.supplierId}) غير موجود`);
+      }
+      if (supplier.status !== 'معتمد') {
+        throw new Error(`المورد (${supplier.name}) غير معتمد حالياً`);
+      }
+
+      // 3. Strict Pre-check: Prevent duplicate purchase or invoice
+      const effectiveInvoiceNo = data.invoiceNo?.trim() || null;
+      if (effectiveInvoiceNo) {
+        const existingPurchase = await tx.packagingPurchase.findFirst({
+          where: {
+            supplierId: data.supplierId,
+            invoiceNo: effectiveInvoiceNo,
+          },
+        });
+
+        if (existingPurchase) {
+          throw new Error(`فاتورة الشراء رقم (${effectiveInvoiceNo}) مسجلة مسبقاً لهذا المورد. لن يتم تكرار قيد الشراء أو زيادة المخزون.`);
+        }
+      }
+
+      // 4. Submission-level Idempotency Check if submissionId is provided
+      if (data.submissionId) {
+        const existingBySub = await tx.packagingPurchase.findFirst({
+          where: {
+            supplierId: data.supplierId,
+            supplyId: data.supplyId,
+            stationId: targetStationId,
+            invoiceNo: data.submissionId,
+          },
+        });
+        if (existingBySub) {
+          return {
+            isExisting: true,
+            totalCost: Number(existingBySub.totalCost),
+            supplierId: data.supplierId,
+          };
+        }
+      }
+
+      // 5. Resolve and verify SUPPLIES StockLocation for target station
       const suppliesLocation = await getStationLocation(tx, targetStationId, WarehouseType.SUPPLIES);
       if (suppliesLocation.stationId !== targetStationId || suppliesLocation.type !== WarehouseType.SUPPLIES) {
         throw new Error('فشل التحقق من ارتباط مخزن المستلزمات بالمحطة المحددة');
       }
 
-      // 3. Increment StationSupply stock
+      // 6. Increment StationSupply stock
       const updatedStationSupply = await updateStationSupplyStock(
         tx,
         suppliesLocation.id,
@@ -59,7 +102,10 @@ export async function addPackagingPurchase(payload: unknown) {
         data: { stock: { increment: data.qty } },
       });
 
-      // 4. Create PackagingPurchase record
+      // Stable invoice reference
+      const invoiceRef = effectiveInvoiceNo || (data.submissionId ? `SUP-PUR-${data.submissionId.slice(-6)}` : `SUP-PUR-${Date.now().toString().slice(-6)}`);
+
+      // 7. Create PackagingPurchase record (exact decimal quantity)
       await tx.packagingPurchase.create({
         data: {
           stationId: targetStationId,
@@ -68,11 +114,11 @@ export async function addPackagingPurchase(payload: unknown) {
           qty: data.qty,
           unitPrice: data.unitPrice,
           totalCost,
-          invoiceNo: data.invoiceNo || null,
+          invoiceNo: effectiveInvoiceNo || (data.submissionId ? data.submissionId : invoiceRef),
         },
       });
 
-      // 5. Log StockMovement audit entry
+      // 8. Log StockMovement audit entry (exact decimal quantity)
       await logStockMovement(tx, {
         movementType: 'PURCHASE',
         sourceLocationId: null,
@@ -82,23 +128,14 @@ export async function addPackagingPurchase(payload: unknown) {
         qty: data.qty,
         unit: supply.unit,
         referenceType: 'PACKAGING_PURCHASE',
-        referenceId: data.invoiceNo || `SUP-PUR-${Date.now().toString().slice(-4)}`,
-        notes: `شراء مستلزمات لمخزن المحطة`,
+        referenceId: invoiceRef,
+        notes: `شراء مستلزمات لمخزن المحطة (فاتورة: ${effectiveInvoiceNo || 'N/A'})`,
         createdById: user.id,
       });
 
-      // 6. AP Financial Transaction
-      const supplier = await tx.supplier.findUnique({ where: { id: data.supplierId } });
-      if (!supplier) {
-        throw new Error(`المورد المحدد (${data.supplierId}) غير موجود`);
-      }
-      if (supplier.status !== 'معتمد') {
-        throw new Error(`المورد (${supplier.name}) غير معتمد حالياً`);
-      }
-
+      // 9. AP Financial Transaction via AccountingService
       const { AccountingService } = await import('@/lib/accounting/accounting-service');
-      const invoiceRef = data.invoiceNo || `SUP-PUR-${Date.now().toString().slice(-4)}`;
-      await AccountingService.recordTransaction(
+      const txnResult = await AccountingService.recordTransaction(
         {
           date: pDate,
           type: 'استحقاق توريد مستلزمات (AP)',
@@ -117,19 +154,33 @@ export async function addPackagingPurchase(payload: unknown) {
         tx
       );
 
+      if (txnResult && (txnResult as any).isDuplicate) {
+        throw new Error(`تم قيد هذه المعاملة المالية مسبقاً برقم ${(txnResult as any).txnId}. تم إلغاء العملية لمنع التكرار.`);
+      }
+
       return {
         newStationStock: updatedStationSupply.stock,
         totalCost,
         supplyName: supply.name,
         unit: supply.unit,
         supplierId: data.supplierId,
+        isExisting: false,
       };
-    });
+    },
+    { maxWait: 10000, timeout: 25000 }
+  );
 
     const { revalidateFinancialImpact } = await import('@/actions/financials');
     await revalidateFinancialImpact('مورد مستلزمات', result.supplierId);
     safeRevalidatePath('/packaging-purchases');
     safeRevalidatePath('/supplies');
+
+    if (result.isExisting) {
+      return {
+        success: true,
+        message: 'تم التعرف على فاتورة الشراء المسجلة مسبقاً دون تكرار المخزون أو القيد المالي.',
+      };
+    }
 
     return {
       success: true,

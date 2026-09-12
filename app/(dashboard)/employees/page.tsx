@@ -7,7 +7,7 @@ import { getTreasuryAccounts } from "@/actions/treasury";
 import { EmployeeList } from "@/components/modules/employees/EmployeeList";
 
 export const metadata = {
-  title: "إدارة الموظفين والرواتب — Nilotic Frost ERP",
+  title: "إدارة الموظفين والرواتب | EcoFresh",
 };
 
 export default async function EmployeesPage() {

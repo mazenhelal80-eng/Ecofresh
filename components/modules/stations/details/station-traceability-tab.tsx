@@ -319,7 +319,6 @@ export function StationTraceabilityTab({
                                           <Truck className="w-3.5 h-3.5 inline ml-1 text-blue-600" />
                                           شحنة: <strong>{sh.shipmentId}</strong> &larr; العميل:{" "}
                                           <strong className="font-sans text-gray-900">{sh.customerName}</strong>
-                                          {sh.destinationPort && <span className="text-gray-500 font-sans"> ({sh.destinationPort})</span>}
                                         </div>
                                         <Badge className="bg-blue-50 text-blue-900 border-blue-200">
                                           {sh.shippedQtyKg.toLocaleString()} كجم
@@ -468,14 +467,10 @@ export function StationTraceabilityTab({
                             <span>{sh.dispatchDate ? new Date(sh.dispatchDate).toLocaleDateString("ar-EG") : "قيد التجهيز"}</span>
                           </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-white p-2 rounded border border-blue-100">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] bg-white p-2 rounded border border-blue-100">
                             <div>
                               <span className="text-gray-500 block font-sans">العميل المستورد:</span>
                               <strong className="font-sans text-gray-900">{sh.customerName}</strong>
-                            </div>
-                            <div>
-                              <span className="text-gray-500 block font-sans">ميناء الوصول:</span>
-                              <strong>{sh.destinationPort || "—"}</strong>
                             </div>
                             <div>
                               <span className="text-gray-500 block font-sans">رقم الحاوية:</span>

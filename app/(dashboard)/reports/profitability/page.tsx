@@ -9,7 +9,7 @@ import { ArrowRight, TrendingUp, Ship, DollarSign, Percent } from "lucide-react"
 import { formatCurrency } from "@/lib/currency";
 
 export const metadata = {
-  title: "تقرير ربحية الشحنات — Nilotic Frost ERP",
+  title: "تقرير ربحية الشحنات | EcoFresh",
 };
 
 export default async function ShipmentsProfitabilityReportPage() {
@@ -36,6 +36,16 @@ export default async function ShipmentsProfitabilityReportPage() {
           <p className="text-muted-foreground mt-1">
             متابعة الإيرادات الإجمالية، التكاليف التشغيلية وصافي ربح الحاويات المصدرة
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-start md:self-auto print:hidden">
+          <a
+            href="/api/export/excel/profitability"
+            download
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-sm"
+          >
+            تصدير إكسيل (Excel)
+          </a>
         </div>
       </div>
 

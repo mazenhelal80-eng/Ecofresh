@@ -7,7 +7,7 @@ import { ArrowRight, Building2, Factory, Zap, Scale } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = {
-  title: "مقارنة كفاءة المحطات — Nilotic Frost ERP",
+  title: "مقارنة كفاءة المحطات | EcoFresh",
 };
 
 export default async function StationsPerformanceReportPage() {
@@ -38,6 +38,16 @@ export default async function StationsPerformanceReportPage() {
           <p className="text-muted-foreground mt-1">
             متابعة إشغال محطات التجميد، نسب التصافي والتصنيع، وتكلفة تشغيل الكيلو لكل موقع
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-start md:self-auto print:hidden">
+          <a
+            href="/api/export/excel/stations"
+            download
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-sm"
+          >
+            تصدير إكسيل (Excel)
+          </a>
         </div>
       </div>
 
@@ -72,7 +82,7 @@ export default async function StationsPerformanceReportPage() {
       </div>
 
       {/* Benchmark Table Component */}
-      <StationsBenchmarkTable stations={stations} />
+      <StationsBenchmarkTable stations={stations as any} />
     </div>
   );
 }

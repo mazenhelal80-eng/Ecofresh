@@ -91,18 +91,35 @@ export function StatementHub({
 
     if (options.length > 0) {
       setPartyId(options[0].id);
+    } else {
+      setPartyId("");
     }
   };
 
+  React.useEffect(() => {
+    if (searchParams.partyType && searchParams.partyType !== partyType) {
+      setPartyType(searchParams.partyType);
+    }
+    if (searchParams.partyId && searchParams.partyId !== partyId) {
+      setPartyId(searchParams.partyId);
+    }
+    if (searchParams.dateFrom !== undefined && searchParams.dateFrom !== dateFrom) {
+      setDateFrom(searchParams.dateFrom);
+    }
+    if (searchParams.dateTo !== undefined && searchParams.dateTo !== dateTo) {
+      setDateTo(searchParams.dateTo);
+    }
+  }, [searchParams]);
+
   const handleApplyFilter = () => {
-    startTransition(() => {
-      const query = new URLSearchParams();
-      if (partyType) query.set("partyType", partyType);
-      if (partyId) query.set("partyId", partyId);
-      if (dateFrom) query.set("dateFrom", dateFrom);
-      if (dateTo) query.set("dateTo", dateTo);
-      router.push(`/financials/statements?${query.toString()}`);
-    });
+    // Avoid startTransition to prevent Next.js router from hanging if navigating to the same URL
+    const query = new URLSearchParams();
+    if (partyType) query.set("partyType", partyType);
+    if (partyId) query.set("partyId", partyId);
+    if (dateFrom) query.set("dateFrom", dateFrom);
+    if (dateTo) query.set("dateTo", dateTo);
+    router.push(`/financials/statements?${query.toString()}`);
+    router.refresh();
   };
 
   const handlePrint = () => {

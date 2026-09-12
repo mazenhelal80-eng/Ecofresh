@@ -7,7 +7,7 @@ import { AgingReportView } from "@/components/modules/reports/aging-report-view"
 import { ArrowRight, Clock } from "lucide-react";
 
 export const metadata = {
-  title: "تقرير أعمار الديون والمستحقات AR/AP — Nilotic Frost ERP",
+  title: "تقرير أعمار الديون والمستحقات AR/AP | EcoFresh",
 };
 
 export default async function CustomerArAgingReportPage() {
@@ -33,6 +33,16 @@ export default async function CustomerArAgingReportPage() {
           <p className="text-muted-foreground mt-1">
             متابعة مستحقات الشركة طرف العملاء والتزامات الشركة للموردين ومقاولي التشغيل حسب فترات الاستحقاق
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-start md:self-auto print:hidden">
+          <a
+            href="/api/export/excel/aging"
+            download
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-sm"
+          >
+            تصدير إكسيل (Excel)
+          </a>
         </div>
       </div>
 

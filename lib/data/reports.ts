@@ -23,7 +23,6 @@ export async function getShipmentsProfitabilityReport() {
       shipmentsList: shipments.map((sh) => ({
         shipmentId: sh.shipmentId,
         customerName: sh.customer?.name || 'عميل غير محدد',
-        destinationPort: sh.destinationPort,
         containerNo: sh.containerNo,
         shippedQtyKg: Number(sh.shippedQtyKg),
         sellingPriceEur: Number(sh.sellingPriceEur),
@@ -82,7 +81,7 @@ export async function getStationsPerformanceReport() {
         id: st.id,
         name: st.name,
         location: st.location,
-        coldStorageCapacityKg: st.coldStorageCapacityKg,
+        coldStorageCapacityKg: Number(st.coldStorageCapacityKg),
         electricityRatePerKg: Number(st.electricityRatePerKg),
         operationsCount: st.operations.length,
         totalRawInputKg,
@@ -127,8 +126,9 @@ export async function getSuppliersPerformanceReport() {
         (b) => b.qcStatus === 'REJECTED'
       ).length;
 
-      const dealsQty = sup.deals.reduce((sum, d) => sum + Number(d.qtyKg), 0);
-      const dealsCost = sup.deals.reduce((sum, d) => sum + Number(d.totalCost), 0);
+      const activeDeals = sup.deals.filter((d) => d.status !== 'ملغاة');
+      const dealsQty = activeDeals.reduce((sum, d) => sum + Number(d.qtyKg), 0);
+      const dealsCost = activeDeals.reduce((sum, d) => sum + Number(d.totalCost), 0);
 
       const totalQtySupplied = totalRawQty + dealsQty;
       const totalVolumeEgp = totalRawPayable + dealsCost;
@@ -273,7 +273,7 @@ export async function getAragingReport() {
         customerId: cust.id,
         customerName: cust.name,
         country: cust.country,
-        creditLimit: Number(cust.creditLimit),
+        creditLimit: Number(cust.creditLimit || 0),
         totalDue,
         totalCollected,
         totalDebit: totalDue, // backwards compat

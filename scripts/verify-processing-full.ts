@@ -86,7 +86,6 @@ async function runProcessingTestSuite() {
         id: "CONT-TEST-01",
         name: "مقاول التشغيل المعتمد",
         tariffRatePerKg: 2.0,
-        stationId: stationX.id,
       },
     });
   }

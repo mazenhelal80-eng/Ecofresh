@@ -123,7 +123,7 @@ export function StationForm() {
                   <FormItem>
                     <FormLabel className="font-semibold text-gray-700">السعة التخزينية القصوى (كجم) *</FormLabel>
                     <FormControl>
-                      <Input type="number" step="1000" placeholder="150000" {...field} />
+                      <Input type="number" step="0.01" placeholder="150000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -138,7 +138,7 @@ export function StationForm() {
                   <FormItem>
                     <FormLabel className="font-semibold text-gray-700">تعريفة التبريد/الكهرباء (ج.م/كجم) *</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.05" placeholder="2.50" {...field} />
+                      <Input type="number" step="0.01" placeholder="2.50" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

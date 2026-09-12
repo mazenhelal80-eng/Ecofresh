@@ -173,7 +173,6 @@ export async function createShipment(payload: unknown) {
           netProfitEgp,
           marginPercent,
           status: 'تم الشحن والإبحار',
-          destinationPort: order.destinationPort,
           createdById: user.id,
           allocatedBatches: {
             create: allocatedBatchesData.map((b) => ({

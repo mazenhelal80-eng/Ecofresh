@@ -10,25 +10,39 @@ import { getTreasuryAccounts } from "@/actions/treasury";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowRight,
+  Award,
   Building2,
+  Calculator,
+  CheckCircle2,
   Coins,
+  FileSpreadsheet,
   FileText,
+  HandCoins,
+  Landmark,
   Mail,
+  MinusCircle,
   Phone,
+  Receipt,
   Scale,
   ShieldCheck,
   User,
   UserCheck,
+  Wallet,
 } from "lucide-react";
 import { EmployeeLedgerTable } from "@/components/modules/employees/EmployeeLedgerTable";
-import { AddTransactionDialog } from "@/components/modules/employees/AddTransactionDialog";
+import { AddAdvanceDialog } from "@/components/modules/employees/AddAdvanceDialog";
+import { RepayAdvanceDialog } from "@/components/modules/employees/RepayAdvanceDialog";
+import { AddDeductionDialog } from "@/components/modules/employees/AddDeductionDialog";
+import { AddBonusDialog } from "@/components/modules/employees/AddBonusDialog";
+import { ProcessPayrollDialog } from "@/components/modules/employees/ProcessPayrollDialog";
 import { EmployeeForm } from "@/components/modules/employees/EmployeeForm";
 import { formatCurrency } from "@/lib/currency";
 
 export const metadata = {
-  title: "تفاصيل وكشف حساب الموظف — Nilotic Frost ERP",
+  title: "تفاصيل وملف الموظف — EcoFresh ERP",
 };
 
 interface PageProps {
@@ -49,11 +63,17 @@ export default async function EmployeeDetailsPage({ params }: PageProps) {
     notFound();
   }
 
-  const { summary, rows } = ledger;
+  const { summary, rows, advances, payrollHistory } = ledger;
+  const mappedAccounts = accounts.map((a) => ({
+    id: a.id,
+    name: a.name,
+    balance: Number(a.balance),
+    currency: a.currency,
+  }));
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Navigation */}
+      {/* Top Navigation & Breadcrumbs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
@@ -65,7 +85,7 @@ export default async function EmployeeDetailsPage({ params }: PageProps) {
               دليل الموظفين
             </Link>
             <span>/</span>
-            <span>كشف حساب الموظف</span>
+            <span>ملف وكشوف حسابات الموظف</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
             <UserCheck className="h-6 w-6 text-emerald-800" />
@@ -76,41 +96,60 @@ export default async function EmployeeDetailsPage({ params }: PageProps) {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <EmployeeForm
             stations={stations}
             employee={employee}
             trigger={
-              <Button variant="outline" size="sm" className="gap-1.5 font-bold">
+              <Button variant="outline" size="sm" className="font-bold">
                 تعديل البيانات
               </Button>
             }
           />
 
-          <AddTransactionDialog
+          <AddAdvanceDialog
             employeeId={employee.id}
             employeeName={employee.name}
             monthlySalary={summary.totalMonthlySalary}
-            treasuryAccounts={accounts.map((a) => ({
-              id: a.id,
-              name: a.name,
-              balance: Number(a.balance),
-              currency: a.currency,
-            }))}
-            trigger={
-              <Button size="sm" className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold gap-1.5 shadow-sm">
-                <Coins className="h-4 w-4" />
-                + قيد حركة مالية
-              </Button>
-            }
+            treasuryAccounts={mappedAccounts}
+          />
+
+          {summary.outstandingAdvances > 0 && (
+            <RepayAdvanceDialog
+              employeeId={employee.id}
+              employeeName={employee.name}
+              outstandingAdvances={summary.outstandingAdvances}
+              treasuryAccounts={mappedAccounts}
+            />
+          )}
+
+          <AddDeductionDialog
+            employeeId={employee.id}
+            employeeName={employee.name}
+          />
+
+          <AddBonusDialog
+            employeeId={employee.id}
+            employeeName={employee.name}
+            treasuryAccounts={mappedAccounts}
+          />
+
+          <ProcessPayrollDialog
+            employeeId={employee.id}
+            employeeName={employee.name}
+            basicSalary={summary.basicSalary}
+            allowances={summary.allowances}
+            outstandingAdvances={summary.outstandingAdvances}
+            treasuryAccounts={mappedAccounts}
           />
         </div>
       </div>
 
-      {/* Hero Financial Summary Cards */}
+      {/* Logical KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Contractual Salary */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-          <span className="text-xs font-semibold text-gray-500 block mb-1">الراتب الشهري والبدلات</span>
+          <span className="text-xs font-semibold text-gray-500 block mb-1">الراتب الشهري التعاقدي</span>
           <div className="text-xl font-bold text-gray-900 font-mono">
             {formatCurrency(summary.totalMonthlySalary)}
           </div>
@@ -119,29 +158,36 @@ export default async function EmployeeDetailsPage({ params }: PageProps) {
           </span>
         </div>
 
+        {/* Card 2: Current Month Net Pay */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-          <span className="text-xs font-semibold text-gray-500 block mb-1">إجمالي المستحق للموظف (+)</span>
-          <div className="text-xl font-bold text-emerald-700 font-mono">
-            {formatCurrency(summary.totalDue)}
+          <span className="text-xs font-semibold text-emerald-700 block mb-1">صافي مسير الشهر الحالي</span>
+          <div className="text-xl font-bold text-emerald-800 font-mono">
+            {formatCurrency(summary.currentMonthNetPayable)}
           </div>
-          <span className="text-[11px] text-gray-400">رواتب ومكافآت وبدلات مستحقة</span>
+          <span className="text-[11px] text-emerald-600">
+            {summary.currentMonthStatus === 'PAID' ? 'تم اعتماد وصرف الراتب' : 'بانتظار الصرف والتحويل'}
+          </span>
         </div>
 
+        {/* Card 3: Outstanding Advances */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-          <span className="text-xs font-semibold text-gray-500 block mb-1">إجمالي المنصرف والمسدد (-)</span>
-          <div className="text-xl font-bold text-rose-700 font-mono">
-            {formatCurrency(summary.totalPaidOrDeducted)}
+          <span className="text-xs font-semibold text-amber-700 block mb-1">محفظة السلف القائمة</span>
+          <div className="text-xl font-bold text-amber-800 font-mono">
+            {formatCurrency(summary.outstandingAdvances)}
           </div>
-          <span className="text-[11px] text-gray-400">سلف ومصروفات وخصومات</span>
+          <span className="text-[11px] text-amber-600">
+            {summary.outstandingAdvances > 0 ? `قسط الشهر: ${formatCurrency(summary.nextMonthInstallment)}` : 'لا توجد سلف متبقية'}
+          </span>
         </div>
 
+        {/* Card 4: Account Status */}
         <div className="bg-gradient-to-br from-[#012d1d] to-[#02472e] text-white rounded-xl p-4 shadow-sm">
-          <span className="text-xs font-semibold text-emerald-200 block mb-1">صافي الرصيد الحالي</span>
-          <div className="text-xl font-bold font-mono">
-            {formatCurrency(Math.abs(summary.remaining))}
+          <span className="text-xs font-semibold text-emerald-200 block mb-1">حالة الحساب المالي</span>
+          <div className="text-lg font-bold">
+            {summary.statusBadge}
           </div>
-          <span className="text-xs font-medium text-emerald-100">
-            {summary.balanceText}
+          <span className="text-xs text-emerald-100 font-mono">
+            {summary.statusText}
           </span>
         </div>
       </div>
@@ -151,7 +197,7 @@ export default async function EmployeeDetailsPage({ params }: PageProps) {
         <CardHeader className="pb-3 border-b border-gray-100">
           <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
             <User className="h-4 w-4 text-emerald-700" />
-            البيانات الوظيفية والإدارية
+            البيانات الوظيفية والتعاقدية
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
@@ -192,20 +238,151 @@ export default async function EmployeeDetailsPage({ params }: PageProps) {
         </CardContent>
       </Card>
 
-      {/* Ledger Table Section */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-emerald-800" />
-            سجل حركات كشف الحساب التراكمي (Running Balance Ledger)
-          </h2>
-          <span className="text-xs text-gray-500 font-mono font-medium">
-            عدد الحركات: {rows.length}
-          </span>
-        </div>
+      {/* Tabbed Logical Sections */}
+      <Tabs defaultValue="ledger" className="space-y-4" dir="rtl">
+        <TabsList className="bg-gray-100 p-1 rounded-xl">
+          <TabsTrigger value="ledger" className="text-xs font-bold gap-1.5 data-[state=active]:bg-white data-[state=active]:text-emerald-900">
+            <FileText className="h-4 w-4" />
+            سجل كشف الحساب التراكمي ({rows.length})
+          </TabsTrigger>
+          <TabsTrigger value="advances" className="text-xs font-bold gap-1.5 data-[state=active]:bg-white data-[state=active]:text-amber-900">
+            <HandCoins className="h-4 w-4" />
+            خطة السلف والأقساط ({advances.length})
+          </TabsTrigger>
+          <TabsTrigger value="payroll" className="text-xs font-bold gap-1.5 data-[state=active]:bg-white data-[state=active]:text-blue-900">
+            <Receipt className="h-4 w-4" />
+            مسيرات الرواتب المنصرفة ({payrollHistory.length})
+          </TabsTrigger>
+        </TabsList>
 
-        <EmployeeLedgerTable rows={rows} />
-      </div>
+        {/* Tab 1: Running Balance Ledger */}
+        <TabsContent value="ledger" className="space-y-3">
+          <EmployeeLedgerTable rows={rows} />
+        </TabsContent>
+
+        {/* Tab 2: Advances & Installment Schedule */}
+        <TabsContent value="advances" className="space-y-3">
+          {advances.length === 0 ? (
+            <div className="p-8 text-center text-xs text-gray-500 bg-white rounded-xl border border-gray-200">
+              لا توجد سلف مسجلة في ذمة هذا الموظف.
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-amber-50/60 text-gray-700 font-bold border-b border-gray-200">
+                  <tr>
+                    <th className="p-3">تاريخ السلفة</th>
+                    <th className="p-3 font-mono">مبلغ السلفة</th>
+                    <th className="p-3">خطة الأقساط</th>
+                    <th className="p-3 font-mono">المسدد</th>
+                    <th className="p-3 font-mono">المتبقي</th>
+                    <th className="p-3">البيان / الملاحظات</th>
+                    <th className="p-3 text-center">الحالة</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-mono">
+                  {advances.map((adv) => (
+                    <tr key={adv.id} className="hover:bg-gray-50">
+                      <td className="p-3 text-gray-600">
+                        {new Date(adv.date).toLocaleDateString("ar-EG")}
+                      </td>
+                      <td className="p-3 font-bold text-gray-900">
+                        {formatCurrency(adv.totalAmount)}
+                      </td>
+                      <td className="p-3 font-sans text-gray-700">
+                        {adv.installmentCount} أقساط ({formatCurrency(adv.monthlyInstallment)} / شهر)
+                      </td>
+                      <td className="p-3 font-bold text-emerald-700">
+                        {formatCurrency(adv.repaidAmount)}
+                      </td>
+                      <td className="p-3 font-bold text-amber-800">
+                        {formatCurrency(adv.remainingAmount)}
+                      </td>
+                      <td className="p-3 font-sans text-gray-600">
+                        {adv.notes || adv.refDoc || "—"}
+                      </td>
+                      <td className="p-3 text-center font-sans">
+                        <Badge
+                          variant="outline"
+                          className={
+                            adv.status === "settled"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
+                          }
+                        >
+                          {adv.status === "settled" ? "مسددة بالكامل" : "قائمة / جاري السداد"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Tab 3: Payroll Slips History */}
+        <TabsContent value="payroll" className="space-y-3">
+          {payrollHistory.length === 0 ? (
+            <div className="p-8 text-center text-xs text-gray-500 bg-white rounded-xl border border-gray-200">
+              لم يتم تسجيل مسيرات رواتب منصرفة سابقة لهذا الموظف.
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-emerald-50/60 text-gray-700 font-bold border-b border-gray-200">
+                  <tr>
+                    <th className="p-3">شهر المسير</th>
+                    <th className="p-3">تاريخ التحويل</th>
+                    <th className="p-3">الخزينة / الحساب المصدر</th>
+                    <th className="p-3 font-mono">الصافي المنصرف</th>
+                    <th className="p-3">رقم السند المالي</th>
+                    <th className="p-3 text-center">حالة الصرف</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-mono">
+                  {payrollHistory.map((p, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="p-3 font-bold text-gray-900 font-sans">
+                        مسير شهر {p.month}
+                      </td>
+                      <td className="p-3 text-gray-600">
+                        {p.paidDate ? new Date(p.paidDate).toLocaleDateString("ar-EG") : "—"}
+                      </td>
+                      <td className="p-3 font-sans text-gray-700">
+                        <span className="flex items-center gap-1">
+                          <Landmark className="h-3.5 w-3.5 text-emerald-700" />
+                          {p.treasuryAccountName}
+                        </span>
+                      </td>
+                      <td className="p-3 font-bold text-emerald-800 text-sm">
+                        {formatCurrency(p.netPayable)}
+                      </td>
+                      <td className="p-3">
+                        {p.payoutTxnId ? (
+                          <Link
+                            href={`/financials/transactions?search=${p.payoutTxnId}`}
+                            className="text-blue-600 hover:underline font-bold"
+                          >
+                            {p.payoutTxnId}
+                          </Link>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center font-sans">
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                          تم الصرف بنجاح
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

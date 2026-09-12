@@ -24,7 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
 
 export const metadata = {
-  title: "الخزينة والحسابات البنكية — Nilotic Frost ERP",
+  title: "الخزينة والحسابات البنكية | EcoFresh",
 };
 
 export default async function TreasuryPage() {

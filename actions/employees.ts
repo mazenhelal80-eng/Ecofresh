@@ -3,7 +3,15 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser, can } from '@/lib/auth';
-import { EmployeeSchema, EmployeeTransactionSchema } from '@/lib/validations/employee';
+import {
+  EmployeeSchema,
+  EmployeeTransactionSchema,
+  EmployeeAdvanceSchema,
+  AdvanceRepaymentSchema,
+  EmployeeDeductionSchema,
+  EmployeeBonusSchema,
+  PayrollProcessSchema,
+} from '@/lib/validations/employee';
 import { generateTxnId, revalidateFinancialImpact } from '@/actions/financials';
 import { getEmployeeFinancialSummary } from '@/lib/data/employee-ledger';
 import { formatCurrency } from '@/lib/currency';
@@ -57,9 +65,17 @@ export async function getEmployees() {
     return employees.map((emp) => {
       let totalDue = 0;
       let totalPaidOrDeducted = 0;
+      let totalAdvances = 0;
+      let totalRepayments = 0;
 
       for (const t of emp.transactions) {
         const amt = Number(t.amount);
+        if (t.type === 'سلفة' || t.type.includes('سلفة') && !t.type.includes('سداد')) {
+          totalAdvances += amt;
+        } else if (t.type.includes('سداد سلفة') || t.type.includes('استرداد سلفة')) {
+          totalRepayments += amt;
+        }
+
         const isDue =
           t.type.includes('استحقاق') ||
           t.type.includes('مكافأة') ||
@@ -73,6 +89,7 @@ export async function getEmployees() {
         }
       }
 
+      const outstandingAdvances = Math.max(0, totalAdvances - totalRepayments);
       const remaining = totalDue - totalPaidOrDeducted;
       let balanceDirection: 'company_owes_employee' | 'employee_owes_company' | 'settled' = 'settled';
       if (remaining > 0) balanceDirection = 'company_owes_employee';
@@ -85,6 +102,9 @@ export async function getEmployees() {
         totalMonthlySalary: Number(emp.basicSalary) + Number(emp.allowances),
         totalDue,
         totalPaidOrDeducted,
+        totalAdvances,
+        totalRepayments,
+        outstandingAdvances,
         remaining,
         balanceDirection,
         balanceText:
@@ -401,11 +421,6 @@ export async function addEmployeeTransaction(employeeId: string, payload: unknow
             amountEgp: data.amount,
             amountCurrency: null,
             currency: 'EGP',
-            debit,
-            credit,
-            relatedEntityType: 'EMPLOYEE_TXN',
-            relatedEntityId: data.refDoc || `EMP-TXN-${employee.id}`,
-            paymentMethod,
             refDoc: data.refDoc || `حركة موظف ${employee.id}`,
             accountId: data.treasuryAccountId,
             accountName: account.name,
@@ -478,6 +493,178 @@ export async function addEmployeeTransaction(employeeId: string, payload: unknow
     return {
       success: false,
       error: error.message || 'حدث خطأ أثناء قيد الحركة المالية للموظف',
+    };
+  }
+}
+
+/**
+ * Record Employee Advance with Installment Plan
+ */
+export async function createEmployeeAdvance(payload: unknown) {
+  const validated = EmployeeAdvanceSchema.safeParse(payload);
+  if (!validated.success) {
+    return { success: false, errors: validated.error.flatten().fieldErrors };
+  }
+
+  const { employeeId, amount, installmentsCount, treasuryAccountId, date, notes } = validated.data;
+  const refDoc = `سلفة (أقساط: ${installmentsCount})`;
+  const finalNotes = notes ? `${notes} — مقسمة على ${installmentsCount} شهر` : `سلفة على ذمة الراتب مقسمة على ${installmentsCount} شهر`;
+
+  return addEmployeeTransaction(employeeId, {
+    type: 'سلفة',
+    amount,
+    date,
+    treasuryAccountId,
+    refDoc,
+    notes: finalNotes,
+  });
+}
+
+/**
+ * Record Advance Repayment with validation against remaining balance
+ */
+export async function createAdvanceRepayment(payload: unknown) {
+  const validated = AdvanceRepaymentSchema.safeParse(payload);
+  if (!validated.success) {
+    return { success: false, errors: validated.error.flatten().fieldErrors };
+  }
+
+  const { employeeId, amount, treasuryAccountId, date, notes, refDoc } = validated.data;
+  const summary = await getEmployeeFinancialSummary(employeeId);
+
+  if (summary.outstandingAdvances > 0 && amount > summary.outstandingAdvances) {
+    return {
+      success: false,
+      error: `مبلغ السداد (${formatCurrency(amount)}) أكبر من إجمالي السلف القائمة على الموظف (${formatCurrency(summary.outstandingAdvances)})`,
+    };
+  }
+
+  return addEmployeeTransaction(employeeId, {
+    type: 'سداد سلفة',
+    amount,
+    date,
+    treasuryAccountId,
+    refDoc: refDoc || 'سداد نقدي لسلفة',
+    notes: notes || 'سداد دفعة من السلفة المستحقة',
+  });
+}
+
+/**
+ * Record Administrative Deduction / Penalty
+ */
+export async function createEmployeeDeduction(payload: unknown) {
+  const validated = EmployeeDeductionSchema.safeParse(payload);
+  if (!validated.success) {
+    return { success: false, errors: validated.error.flatten().fieldErrors };
+  }
+
+  const { employeeId, amount, reason, date, refDoc } = validated.data;
+
+  return addEmployeeTransaction(employeeId, {
+    type: 'خصم إداري',
+    amount,
+    date,
+    treasuryAccountId: null,
+    refDoc: refDoc || 'خصم إداري',
+    notes: reason,
+  });
+}
+
+/**
+ * Record Bonus or Allowance
+ */
+export async function createEmployeeBonus(payload: unknown) {
+  const validated = EmployeeBonusSchema.safeParse(payload);
+  if (!validated.success) {
+    return { success: false, errors: validated.error.flatten().fieldErrors };
+  }
+
+  const { employeeId, amount, type, treasuryAccountId, date, notes } = validated.data;
+
+  return addEmployeeTransaction(employeeId, {
+    type: type || 'مكافأة',
+    amount,
+    date,
+    treasuryAccountId: treasuryAccountId || null,
+    refDoc: type === 'بدل' ? 'بدل إضافي' : 'مكافأة تشجيعية',
+    notes,
+  });
+}
+
+/**
+ * Process Monthly Payroll for an Employee
+ */
+export async function processEmployeePayroll(payload: unknown) {
+  const validated = PayrollProcessSchema.safeParse(payload);
+  if (!validated.success) {
+    return { success: false, errors: validated.error.flatten().fieldErrors };
+  }
+
+  const { employeeId, month, basicSalary, allowances, bonusAmount, deductionAmount, advanceDeduction, netAmount, treasuryAccountId, notes } = validated.data;
+
+  // Execute in transaction to ensure atomicity
+  const user = await getCurrentUser();
+  if (!user || !can(user.role, 'MANAGE_FINANCIALS')) {
+    return { success: false, error: 'غير مصرح لك باعتماد وصرف مسير الرواتب' };
+  }
+
+  try {
+    const grossDue = basicSalary + allowances + bonusAmount;
+    const totalDeductions = deductionAmount + advanceDeduction;
+    const computedNet = grossDue - totalDeductions;
+
+    if (Math.abs(computedNet - netAmount) > 0.01) {
+      return {
+        success: false,
+        error: `خطأ في تطابق صافي الراتب: المحتسب (${formatCurrency(computedNet)}) لا يطابق المطلوب (${formatCurrency(netAmount)})`,
+      };
+    }
+
+    // Step 1: Record Accrual for the month
+    await addEmployeeTransaction(employeeId, {
+      type: 'استحقاق راتب شهري',
+      amount: grossDue,
+      treasuryAccountId: null,
+      refDoc: `استحقاق شهر ${month}`,
+      notes: `استحقاق الراتب الشهري لشهر ${month} (أساسي: ${basicSalary} + بدلات: ${allowances}${bonusAmount > 0 ? ` + مكافأة: ${bonusAmount}` : ''})`,
+    });
+
+    // Step 2: If there is an advance installment deduction, record repayment
+    if (advanceDeduction > 0) {
+      await addEmployeeTransaction(employeeId, {
+        type: 'سداد سلفة',
+        amount: advanceDeduction,
+        treasuryAccountId: null, // Deduction against salary accrual
+        refDoc: `خصم قسط سلفة لشهر ${month}`,
+        notes: `خصم قسط سلفة من راتب شهر ${month}`,
+      });
+    }
+
+    // Step 3: If administrative deductions apply
+    if (deductionAmount > 0) {
+      await addEmployeeTransaction(employeeId, {
+        type: 'خصم إداري',
+        amount: deductionAmount,
+        treasuryAccountId: null,
+        refDoc: `خصومات شهر ${month}`,
+        notes: `خصومات وجزاءات إدارية عن شهر ${month}`,
+      });
+    }
+
+    // Step 4: Pay the remaining Net Salary via Treasury Outflow
+    const payoutResult = await addEmployeeTransaction(employeeId, {
+      type: 'صرف راتب',
+      amount: netAmount,
+      treasuryAccountId,
+      refDoc: `مسير رواتب ${month}`,
+      notes: notes || `صرف صافي راتب شهر ${month}`,
+    });
+
+    return payoutResult;
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'حدث خطأ أثناء صرف مسير الراتب',
     };
   }
 }

@@ -5,7 +5,7 @@ import { VoucherForm } from "@/components/modules/financials/voucher-form";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "إصدار سند مالي جديد — Nilotic Frost ERP",
+  title: "إصدار سند مالي جديد | EcoFresh",
 };
 
 export default async function NewVoucherPage() {

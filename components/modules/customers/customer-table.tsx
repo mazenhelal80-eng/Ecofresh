@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import Link from "next/link";
-import { Globe, MapPin, CreditCard, ChevronLeft, Building2, Trash2 } from "lucide-react";
+import { Globe, CreditCard, ChevronLeft, Building2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ interface CustomerItem {
   code: string;
   name: string;
   country: string;
-  destinationPort: string;
   currency: string;
   paymentTerms: string;
   creditLimit: any;
@@ -56,7 +55,6 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                 <th className="py-3.5 px-4">كود العميل</th>
                 <th className="py-3.5 px-4">اسم الشركة / العميد</th>
                 <th className="py-3.5 px-4">الدولة والعملة</th>
-                <th className="py-3.5 px-4">ميناء الوصول البحرية</th>
                 <th className="py-3.5 px-4">الحد الائتماني وشروط الدفع</th>
                 <th className="py-3.5 px-4 text-center">عدد الاتفاقيات</th>
                 <th className="py-3.5 px-4 text-center">الإجراءات</th>
@@ -65,7 +63,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
             <tbody className="divide-y divide-gray-100">
               {customers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-500">
+                  <td colSpan={6} className="py-8 text-center text-gray-500">
                     لا يوجد عملاء تصدير مسجلون حالياً
                   </td>
                 </tr>
@@ -99,12 +97,6 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                             ج.م
                           </Badge>
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-700 font-medium">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5 text-cyan-600 shrink-0" />
-                          {item.destinationPort}
-                        </span>
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex flex-col">

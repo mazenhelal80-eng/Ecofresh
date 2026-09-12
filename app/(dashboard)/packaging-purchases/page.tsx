@@ -17,8 +17,8 @@ export default async function PackagingPurchasesPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const totalSpent = purchases.reduce((acc, p) => acc + Number(p.totalCost), 0);
-  const totalItems = purchases.reduce((acc, p) => acc + p.qty, 0);
+  const totalSpent = purchases.reduce((acc: number, p) => acc + Number(p.totalCost), 0);
+  const totalItems = purchases.reduce((acc: number, p) => acc + Number(p.qty), 0);
 
   return (
     <div className="p-6 space-y-6">
@@ -124,7 +124,7 @@ export default async function PackagingPurchasesPage() {
                       </td>
                       <td className="p-3 font-medium">{p.supplier.name}</td>
                       <td className="p-3 font-bold text-gray-900">
-                        {p.qty.toLocaleString()} {p.supply.unit}
+                        {Number(p.qty).toLocaleString()} {p.supply.unit}
                       </td>
                       <td className="p-3 font-mono">{Number(p.unitPrice).toFixed(2)} ج.م</td>
                       <td className="p-3 font-bold text-emerald-800 font-mono">

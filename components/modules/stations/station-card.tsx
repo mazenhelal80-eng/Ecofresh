@@ -27,7 +27,7 @@ interface StationCardProps {
     id: string;
     name: string;
     location: string;
-    coldStorageCapacityKg: number;
+    coldStorageCapacityKg: number | any;
     electricityRatePerKg: any;
     supervisorName?: string | null;
     phone?: string | null;

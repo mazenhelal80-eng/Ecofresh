@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { CustomerForm } from "@/components/modules/customers/customer-form";
 
 export const metadata = {
-  title: "إضافة عميل جديد — Nilotic Frost ERP",
+  title: "إضافة عميل جديد | EcoFresh",
 };
 
 export default function NewCustomerPage() {

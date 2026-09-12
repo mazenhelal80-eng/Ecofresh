@@ -5,8 +5,13 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Sidebar } from "./sidebar";
+import { UserRole } from "@prisma/client";
 
-export function MobileNav() {
+interface MobileNavProps {
+  userRole?: UserRole | string | null;
+}
+
+export function MobileNav({ userRole }: MobileNavProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -22,7 +27,7 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="p-0 w-[260px]">
-        <Sidebar onItemClick={() => setOpen(false)} />
+        <Sidebar userRole={userRole} onItemClick={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
   );

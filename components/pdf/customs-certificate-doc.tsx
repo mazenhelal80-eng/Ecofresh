@@ -198,10 +198,6 @@ export function CustomsCertificateDoc({ shipment }: CustomsCertificateProps) {
               <Text style={styles.label}>Destination Country:</Text>
               <Text style={styles.val}>{shipment.customer?.country || 'Netherlands'}</Text>
             </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Destination Port:</Text>
-              <Text style={styles.val}>{shipment.destinationPort || 'Rotterdam Port'}</Text>
-            </View>
           </View>
 
           <View style={styles.card}>
@@ -294,7 +290,7 @@ export function CustomsCertificateDoc({ shipment }: CustomsCertificateProps) {
           <View style={{ width: '45%', borderTopWidth: 1, borderTopColor: '#94a3b8', paddingTop: 4 }}>
             <Text style={{ fontSize: 8, color: '#475569', textAlign: 'center' }}>Quality Assurance Manager</Text>
             <Text style={{ fontSize: 8, fontWeight: 'bold', color: '#0369a1', textAlign: 'center', marginTop: 2 }}>
-              Nilotic Frost Quality Control Lab
+              EcoFresh Quality Control Lab
             </Text>
           </View>
           <View style={{ width: '45%', borderTopWidth: 1, borderTopColor: '#94a3b8', paddingTop: 4 }}>
@@ -306,7 +302,7 @@ export function CustomsCertificateDoc({ shipment }: CustomsCertificateProps) {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Nilotic Frost ERP — Customs Traceability & Cold-Chain Engine</Text>
+          <Text style={styles.footerText}>EcoFresh ERP — Customs Traceability & Cold-Chain Engine</Text>
           <Text style={styles.footerText}>Page 1 of 1</Text>
         </View>
       </Page>

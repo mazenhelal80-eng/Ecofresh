@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   Building2,
   Globe,
-  MapPin,
   CreditCard,
   Phone,
   Mail,
@@ -25,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 
 export const metadata = {
-  title: "تفاصيل العميل والاتفاقيات — Nilotic Frost ERP",
+  title: "تفاصيل العميل والاتفاقيات | EcoFresh",
 };
 
 interface CustomerDetailsPageProps {
@@ -82,10 +81,6 @@ export default async function CustomerDetailsPage({ params }: CustomerDetailsPag
                   <span className="flex items-center gap-1">
                     <Globe className="h-3.5 w-3.5" /> {customer.country}
                   </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5" /> ميناء الوصول: {customer.destinationPort}
-                  </span>
                 </CardDescription>
               </div>
             </div>
@@ -95,7 +90,7 @@ export default async function CustomerDetailsPage({ params }: CustomerDetailsPag
               <div className="flex flex-col text-right">
                 <span className="text-xs text-emerald-200 font-semibold">الحد الائتماني المعتمد</span>
                 <span className="text-lg font-bold text-white">
-                  {formatCurrency(Number(customer.creditLimit))}
+                  {formatCurrency(Number(customer.creditLimit || 0))}
                 </span>
               </div>
             </div>

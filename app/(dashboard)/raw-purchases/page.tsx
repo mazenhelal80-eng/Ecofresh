@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = {
-  title: "سجل وارد الخام — Nilotic Frost ERP",
+  title: "سجل وارد الخام | EcoFresh",
 };
 
 export default async function RawPurchasesPage() {

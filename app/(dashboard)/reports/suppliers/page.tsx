@@ -6,7 +6,7 @@ import { ArrowRight, Users, CheckCircle, AlertTriangle, ShieldX } from "lucide-r
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = {
-  title: "بطاقة جودة الموردين — Nilotic Frost ERP",
+  title: "بطاقة جودة الموردين | EcoFresh",
 };
 
 export default async function SuppliersPerformanceReportPage() {
@@ -39,6 +39,16 @@ export default async function SuppliersPerformanceReportPage() {
           <p className="text-muted-foreground mt-1">
             تحليل نتائج الفحص الجودي والتسليمات المعتمدة لموردي المحاصيل والمستلزمات
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-start md:self-auto print:hidden">
+          <a
+            href="/api/export/excel/suppliers"
+            download
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-sm"
+          >
+            تصدير إكسيل (Excel)
+          </a>
         </div>
       </div>
 

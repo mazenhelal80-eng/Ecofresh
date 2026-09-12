@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
 
 export const metadata = {
-  title: "دليل العملاء والاتفاقيات — Nilotic Frost ERP",
+  title: "دليل العملاء والاتفاقيات | EcoFresh",
 };
 
 interface CustomersPageProps {
