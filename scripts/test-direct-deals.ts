@@ -1,5 +1,5 @@
-import { prisma } from 'd:/exporting-erp-main/lib/prisma';
-import { addDirectPurchaseDeal, cancelDirectPurchaseDeal } from 'd:/exporting-erp-main/actions/direct-deals';
+import { prisma } from '@/lib/prisma';
+import { addDirectPurchaseDeal, cancelDirectPurchaseDeal } from '@/actions/direct-deals';
 import { WarehouseType } from '@prisma/client';
 import assert from 'assert';
 
