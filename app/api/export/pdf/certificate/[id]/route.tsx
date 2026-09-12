@@ -3,6 +3,8 @@ import { renderToStream } from '@react-pdf/renderer';
 import { prisma } from '@/lib/prisma';
 import { CustomsCertificateDoc } from '@/components/pdf/customs-certificate-doc';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
